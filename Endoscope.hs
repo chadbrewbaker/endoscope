@@ -56,6 +56,15 @@ endoscope size mult = buildG (0,size) $ concat [ g i | i <- [0..size]]
         where
           f x = monogenic size x mult
 
+
+type Row = [Bool]
+type BoolMatrix = [Row]
+
+multBM :: BoolMatrix -> BoolMatrix -> BoolMatrix
+multBM a b = undefined
+
+
+
 mul7 :: Int -> Int -> Int
 mul7 x y = mod (x*y) 7
 
