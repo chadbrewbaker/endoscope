@@ -1,3 +1,4 @@
+module MatMul where
 
 import Data.List
 
@@ -7,11 +8,6 @@ toZ2 a =  mod a 2
 --mmult :: Num a => [[a]] -> [[a]] -> [[a]] 
 mmult a b = [ [ toZ2 $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 
-idMat =[[1,0], 
-       [0, 1]]
- 
-fibMat = [[1, 1],
-       [1, 0]]
  
 
 --powerListz2 ::Num a =>[[a]] -> [[a]]

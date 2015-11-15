@@ -18,7 +18,7 @@ maxWidth = 5
 
 
 isAlive :: Neighbors -> IsAlive -> IsAlive
-isAlive n a | n==2 && (not a) = dead
+isAlive n a | n==2 && not a = dead
             | n ==2 && a  = alive
             | n < 2 = dead
             | n==3 = alive
@@ -27,14 +27,14 @@ isAlive n a | n==2 && (not a) = dead
 
 
 getNeighbors :: Cell -> [Cell]
-getNeighbors (x,y,a) = [ ((mod (x+1) maxWidth) , (mod (y+1) maxHeight), True),
-                         ((mod (x+1) maxWidth), (mod (y-1) maxHeight), True),
-                          ((mod (x-1) maxWidth), (mod (y+1) maxHeight), True),
-                          ((mod (x+1) maxWidth), y, True),
-                          ((mod (x-1) maxWidth), (mod (y-1) maxHeight), True),
-                          (x, (mod (y-1) maxHeight), True),
-                          (x, (mod (y+1) maxHeight), True),
-                          ((mod (x-1) maxWidth), y, True)]
+getNeighbors (x,y,a) = [ (mod (x+1) maxWidth , mod (y+1) maxHeight, True),
+                         (mod (x+1) maxWidth, mod (y-1) maxHeight, True),
+                          (mod (x-1) maxWidth, mod (y+1) maxHeight, True),
+                          (mod (x+1) maxWidth, y, True),
+                          (mod (x-1) maxWidth, mod (y-1) maxHeight, True),
+                          (x, mod (y-1) maxHeight, True),
+                          (x, mod (y+1) maxHeight, True),
+                          (mod (x-1) maxWidth, y, True)]
 type AliveNeighbors = [Cell]
 type AliveCells = [Cell]
 
@@ -44,17 +44,17 @@ getAllStillAlive (a:as) [] = []
 --getAllStillAlive  x (y:ys) = []
 --getAllStilAlive (a:as) (y:ys) = []
 getAllStillAlive (a:as) (y:ys) = if isAlive (count (a:as) y) True 
-	                            then [y] ++ getAllStillAlive (a:as) (ys) 
-	                            else getAllStillAlive (a:as) (ys) 
+	                            then y : getAllStillAlive (a:as) ys 
+	                            else getAllStillAlive (a:as) ys 
 
 
 getNewAlive :: AliveNeighbors -> AliveNeighbors -> AliveCells
 getNewAlive [] _ = []
-getNewAlive (x:xs) y = if isAlive (count y x) False then [x] ++ getNewAlive xs y else getNewAlive xs y
+getNewAlive (x:xs) y = if isAlive (count y x) False then x : getNewAlive xs y else getNewAlive xs y
 
 
 cellMatch :: Cell -> Cell -> Bool
-cellMatch (x,y, _) (a,b, _) = if (x==a) && (y==b) then True else False
+cellMatch (x,y, _) (a,b, _) = (x==a) && (y==b)
 
 
 uniqCells = nubBy cellMatch 
@@ -62,7 +62,7 @@ uniqCells = nubBy cellMatch
 type CellCount = Integer
 count :: [Cell] -> Cell -> CellCount
 count [] _ = 0
-count (x:xs) c | (cellMatch x c) = 1+ count xs c
+count (x:xs) c | cellMatch x c = 1+ count xs c
                 |otherwise = count xs c
 
 
@@ -72,7 +72,7 @@ getAllNeighbors (x:xs) = getNeighbors x  ++ getAllNeighbors xs
 
 life :: World -> World
 life [] = []
-life  x =  uniqCells $ getAllStillAlive (getAllNeighbors x ) (x) ++ getNewAlive (getAllNeighbors x ) (getAllNeighbors x ) 
+life  x =  uniqCells $ getAllStillAlive (getAllNeighbors x ) x ++ getNewAlive (getAllNeighbors x ) (getAllNeighbors x ) 
    
 
 
