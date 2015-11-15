@@ -75,9 +75,9 @@ mulX m x y = mod (x*y) m
 -- cycle through print mult x x == x
 
 idempotents :: Int -> (Int -> Int -> Int) -> [Int]
-idempotents size mult = concat [ (selectSame i)  | i <- [0.. size] ]
+idempotents size mult = concat [ selectSame i  | i <- [0.. size] ]
     where
-       selectSame x |  (mult x x) == x  = [x]
+       selectSame x |  mult x x == x  = [x]
                     | otherwise  = []
 
 
