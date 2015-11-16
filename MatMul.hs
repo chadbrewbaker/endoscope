@@ -1,6 +1,7 @@
 module MatMul where
 
 import Data.List
+import BrewLib
 
 --toZ2 :: Num a => a -> a 
 toZ2 a =  mod a 2
