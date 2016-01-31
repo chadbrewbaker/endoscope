@@ -28,8 +28,8 @@ testMatMulGivesCorrectSize = TestCase $ assertEqual
   2
 
 main = runTestTT $ TestList[
-	testFiveFactorial,
-	testMatMulGivesCorrectSize
-	]
+  testFiveFactorial,
+  testMatMulGivesCorrectSize
+  ]
 
 

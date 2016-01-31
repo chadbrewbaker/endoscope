@@ -2,6 +2,9 @@ module Endoscope where
 
 import Data.Graph
 
+import Data.Set (Set)
+import qualified Data.Set as Set
+
 type Leaves = Integer
 type Treelike = Bool
 
@@ -41,7 +44,10 @@ type Treelike = Bool
 
 -- toSuccinct :: (a -> a) -> SuccinctFunction
 
-
+mono :: Ord a => (a -> a -> a) -> (a,a) -> Set a -> Set a
+mono mult (primal,current) accum = if Set.member next accum then accum else mono mult (primal, next) (Set.insert next accum)
+    where
+      next = mult primal current
 
 monogenic :: Int -> Int -> (Int -> Int -> Int) -> [Int]
 monogenic size seed mult = take size $ iterate f seed
@@ -82,6 +88,7 @@ idempotents size mult = concat [ selectSame i  | i <- [0.. size] ]
 
 
 
+
 -- Examples:
 -- Z2 Matrices | domain 2^{n*n}
 -- Z3 matrices | domain 3^{n*n}
@@ -96,9 +103,14 @@ idempotents size mult = concat [ selectSame i  | i <- [0.. size] ]
 
 
 
-
+--transMult :: [a] -> [a] -> [a]
+--transMult x:xs ys = 
 
 main = do 
           print $ idempotents 7 mul7
+          print $ mono mul7 (2,2) Set.empty
+--mono :: Ord a => (a -> a -> a) -> (a,a) -> Set a -> Set a
+--mono mult (primal,current) accum
+
    -- print $ components $ endoscope (3*3) mul7
     
