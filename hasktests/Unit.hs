@@ -8,8 +8,8 @@ factorial 1 = 1
 factorial 2 = 2
 factorial a = a * factorial (a-1)
 
-testFiveFactorial = TestCase $ assertEqual 
-  "Testing 5!"
+sampleTest = TestCase $ assertEqual 
+  "Sample test, 5!"
   (1*2*3*4*5) 
   (factorial 5) 
 
@@ -27,9 +27,15 @@ testMatMulGivesCorrectSize = TestCase $ assertEqual
   (length (mmult idMat idMat))
   2
 
+leftID = TestCase $ assertEqual 
+  "Check identity does not grow anything"
+  (matsZ2 2) 
+  (map (mmult idMat) (matsZ2 2))
+
 main = runTestTT $ TestList[
-  testFiveFactorial,
-  testMatMulGivesCorrectSize
+  sampleTest,
+  testMatMulGivesCorrectSize,
+  leftID
   ]
 
 
