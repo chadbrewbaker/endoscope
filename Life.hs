@@ -13,9 +13,6 @@ type Cell = (Lat, Long, IsAlive)
 type World = [Cell]
 type Neighbors = Integer
 
-maxHeight = 5
-maxWidth = 5
-
 
 isAlive :: Neighbors -> IsAlive -> IsAlive
 isAlive n a | n==2 && not a = dead
@@ -26,15 +23,15 @@ isAlive n a | n==2 && not a = dead
             |otherwise = dead
 
 
-getNeighbors :: Cell -> [Cell]
-getNeighbors (x,y,a) = [ (mod (x+1) maxWidth , mod (y+1) maxHeight, True),
-                         (mod (x+1) maxWidth, mod (y-1) maxHeight, True),
-                          (mod (x-1) maxWidth, mod (y+1) maxHeight, True),
-                          (mod (x+1) maxWidth, y, True),
-                          (mod (x-1) maxWidth, mod (y-1) maxHeight, True),
-                          (x, mod (y-1) maxHeight, True),
-                          (x, mod (y+1) maxHeight, True),
-                          (mod (x-1) maxWidth, y, True)]
+getNeighbors :: (Integer,Integer) -> Cell -> [Cell]
+getNeighbors (w,h) (x,y,a) = [ (mod (x+1) w , mod (y+1) h, True),
+                         (mod (x+1) w, mod (y-1) h, True),
+                          (mod (x-1) w, mod (y+1) h, True),
+                          (mod (x+1) w, y, True),
+                          (mod (x-1) w, mod (y-1) h, True),
+                          (x, mod (y-1) h, True),
+                          (x, mod (y+1) h, True),
+                          (mod (x-1) w, y, True)]
 type AliveNeighbors = [Cell]
 type AliveCells = [Cell]
 
@@ -44,8 +41,8 @@ getAllStillAlive (a:as) [] = []
 --getAllStillAlive  x (y:ys) = []
 --getAllStilAlive (a:as) (y:ys) = []
 getAllStillAlive (a:as) (y:ys) = if isAlive (count (a:as) y) True 
-	                            then y : getAllStillAlive (a:as) ys 
-	                            else getAllStillAlive (a:as) ys 
+                              then y : getAllStillAlive (a:as) ys 
+                              else getAllStillAlive (a:as) ys 
 
 
 getNewAlive :: AliveNeighbors -> AliveNeighbors -> AliveCells
@@ -66,12 +63,12 @@ count (x:xs) c | cellMatch x c = 1+ count xs c
                 |otherwise = count xs c
 
 
-getAllNeighbors :: [Cell] -> [Cell]
-getAllNeighbors = foldr ((++) . getNeighbors) []
+getAllNeighbors :: (Integer, Integer) -> [Cell] -> [Cell]
+getAllNeighbors (w,h) = foldr ((++) . (getNeighbors (w,h)) ) []
 
-life :: World -> World
-life [] = []
-life  x =  uniqCells $ getAllStillAlive (getAllNeighbors x ) x ++ getNewAlive (getAllNeighbors x ) (getAllNeighbors x ) 
+life :: (Integer, Integer) -> World -> World
+life _ [] = []
+life (w,h) x =  uniqCells $ getAllStillAlive (getAllNeighbors (w,h) x ) x ++ getNewAlive (getAllNeighbors (w,h) x ) (getAllNeighbors (w,h) x ) 
    
 
 
