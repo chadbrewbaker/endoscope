@@ -64,7 +64,7 @@ count (x:xs) c | cellMatch x c = 1+ count xs c
 
 
 getAllNeighbors :: (Integer, Integer) -> [Cell] -> [Cell]
-getAllNeighbors (w,h) = foldr ((++) . (getNeighbors (w,h)) ) []
+getAllNeighbors (w,h) = foldr ((++) . getNeighbors (w,h) ) []
 
 life :: (Integer, Integer) -> World -> World
 life _ [] = []

@@ -10,6 +10,9 @@ toZ2 a =  mod a 2
 --mmult :: Num a => [[a]] -> [[a]] -> [[a]] 
 mmult a b = [ [ toZ2 $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 
+madd a b = [ [ toZ2 $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
+
+
 powerListz2 ::Num a =>[[a]] -> [[a]]
 powerListz2 [] = []
 powerListz2 (x:xs) = (1:x) : (0:x) : powerListz2 xs

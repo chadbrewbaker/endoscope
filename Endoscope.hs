@@ -10,6 +10,8 @@ import qualified Data.Vector as Vector
 
 import qualified Data.List as List
 
+import qualified Data.Map as Map
+
 import MatMul
 import Control.Monad
 type Leaves = Integer
@@ -100,6 +102,22 @@ endoscope' elts mult = foldr (Set.union . mono' mult) Set.empty elts
 --endoscope' elts mult = foldr Set.union Set.empty (map (mono' mult) elts )
 --foldr :: (a -> b -> b) -> b -> [a] -> b
                     
+monoGraph :: Bounds -> Set Edge -> Graph
+monoGraph b edges = Graph.buildG b $ Set.toList edges
+
+leaves =  Graph.indegree 
+-- Graph.indegree :: Graph -> Table Int
+
+
+getLeaves elts mult = thingIds
+--getLeaves elts mult = Graph.indegree $ monoGraph bounds $ endoscope' elts mult
+     where 
+        -- bounds = (length elts, length elts)
+         thing = List.nub $ concat $ deTouple $ Set.toList $  endoscope' elts mult
+         thingIds = zip thing [0..(length thing)]
+         thingToIDMap = Map.fromList thingIds
+         invert (a,b) = (b,a)
+         idToThingMap = Map.fromList $ map invert thingIds
 
 endoscope :: Int -> (Int -> Int -> Int) -> Graph
 
@@ -154,14 +172,21 @@ idempotents elts mult = filter isSame elts
 --transMult x:xs ys = 
 
 endoThing x = endoscope' [0..(x-1)] (mulX x)
+idempThing x = idempotents [0..(x-1)] (mulX x)
+
+
 --NEW IN OEIS?? Sum of orders of elements from the integers modulo n under multiplication
 --map length $ map endoThing [1..50]
 
 endoPermThing x =  endoscope' (perm x) transMult
+idempPermThing x = idempotents (perm x) transMult
 
 endoTransThing x =  endoscope' (trans [0..(x-1)]) transMult
+idempTransThing x = idempotents (trans [0..(x-1)]) transMult
+transLeaves x = getLeaves (trans [0..(x-1)]) transMult
 
 endoAddThing x = endoscope' [0..(x-1)] (addX x)
+idempAddThing x = idempotents [0..(x-1)] (addX x)
 --A057660
 --map length $ map endoAddThing [1..50]
 
@@ -173,6 +198,7 @@ idempMM x = idempotents (matsZ2 x) mmult
 --[2,23,1297,275083] not found in OEIS
 
 endoMAddThing x =  endoscope' (matsZ2 x) madd
+idempMAddThing x = idempotents (matsZ2 x) madd
 --map length $ map endoMAddThing [1..4]
 --[3,26,966,120836]
 
@@ -185,23 +211,66 @@ endoSetIntersectThing x = endoscope' (map Set.fromList $ powset [1..x]) Set.inte
 -- symmetric difference mult op for all subsets of n ?
 -- xor on boolean vectors of length n?
 
+deTouple = map deTouple'
+     where
+      deTouple' a = [fst a, snd a]
 
-main = do print "Edges in monogenic inclusion graph of MatMul on Z2"
+thing = List.nub $ concat $ deTouple $ Set.toList $ endoTransThing 3
+thingIds = zip thing [0..(length thing)]
+thingToIDMap = Map.fromList thingIds
+invert (a,b) = (b,a)
+idToThingMap = Map.fromList $ map invert thingIds
+
+--Run it for 2 * order, 2*order + 1 see who gets hit more than once, first top count is entrypoint item
+--histogram of index, period
+--Count of relunctant functions
+--Count of reluctant function leaves
+--Count of permutation like functions
+--Min covering set, in parallel for each connected component
+--Min dom detection set = sum of min dom set size for each connected component
+
+-- All k tuples, does union of all k dom sets cover G
+
+
+--pairToList :: [([a],[a])] -> [[a]]
+--pairToList l = concat $ map deTuple l
+
+--      where
+--        deTuple x = concat((fst x) (snd x))
+
+main = do print "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
           print $ map length $ map endoMMThing [1..3]
-          print "Edges in monogenic inclusion graph of co-MatMul on Z2"
+          print "Idempotents in BMM, OEIS A086907 and OEIS A132186"
+          print $ map length $ map idempMM [1..3]
+          print "Edges in monogenic inclusion graph of co-MatMul on Z2, new sequence"
           print $ map length $ map endoMAddThing [1..3]
-          print "Edges in monogenic inclusion graph of multiply on Zn"
+          print "Idempotents in coBMM, need the sixth term to narrow down candidates"
+          print $ map length $ map idempMAddThing [1..3] -- 1,4,10,22,46...
+          print "Edges in monogenic inclusion graph of multiply on Zn, new sequence"
           print $ map length $ map endoThing [1..50]
-          print "Edges in Tn"
+          print "Idempotents in Zn under multiply, OEIS A034444"         
+          print $ map length $ map idempThing [1..50]
+          print "Edges in Tn, new sequence"
           print $ map length $ map endoTransThing [1..6]
-          print "Edges in Sn"
+          print "Idempotents in Tn, OEIS A000248"
+          print $ map length $ map idempTransThing [1..6]
+          --print $ Set.elems $ endoTransThing 3
+          --print $ Set.toList $ endoTransThing 3
+          --print $ map pairToList $ Set.toList $ endoTransThing 3
+          print "Leaves of Tn"
+          print $ transLeaves 3 --[1..6]
+          print "Edges in Sn, OEIS A060014"
           print $ map length $ map endoPermThing [1..6]
-          print "Edges in monogenic inclusion graph of add on Zn"
+          print "Idempotents in Sn, only the identity function"
+          print $ map length $ map idempPermThing [1..6]
+          print "Edges in monogenic inclusion graph of add on Zn, OEIS A057660"
           print $ map length $ map endoAddThing [1..50]
-          print "Edges in monogenic inclusion graph of Powerset under union"
-          print $ map length $ map endoSetThing [1..5]    
-          print "Edges in monogenic inclusion graph of Powerset under intersection"
-          print $ map length $ map endoSetIntersectThing [1..5]
+          print "Idempotents of add on Zn, just zero"
+          print $ map length $ map idempAddThing [1..50]
+          --print "Edges in monogenic inclusion graph of Powerset under union"
+          --print $ map length $ map endoSetThing [1..5]    
+          --print "Edges in monogenic inclusion graph of Powerset under intersection"
+          --print $ map length $ map endoSetIntersectThing [1..5]
 --mono :: Ord a => (a -> a -> a) -> (a,a) -> Set a -> Set a
 --mono mult (primal,current) accum
 
