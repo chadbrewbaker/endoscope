@@ -109,15 +109,50 @@ leaves =  Graph.indegree
 -- Graph.indegree :: Graph -> Table Int
 
 
-getLeaves elts mult = thingIds
+deTouple = map deTouple'
+     where
+      deTouple' a = [fst a, snd a]
+
+
+--- Endofunctions where they are not a child of anyone else
+-- (_,a)  matches [(a,a)] or []
+-- (6,[]),(7,[7])
+-- (a, []) = True
+-- (a, [a] ) = True
+-- _ false
+
+getLeaves elts mult = theInvertGraph --thingIds
 --getLeaves elts mult = Graph.indegree $ monoGraph bounds $ endoscope' elts mult
      where 
-        -- bounds = (length elts, length elts)
-         thing = List.nub $ concat $ deTouple $ Set.toList $  endoscope elts mult
+        -- bounds = (length elts, length elts)      
          thingIds = zip thing [0..(length thing)]
+         thing = List.nub $ concat $ deTouple $ Set.toList $  endoscope elts mult
          thingToIDMap = Map.fromList thingIds
-         invert (a,b) = (b,a)
-         idToThingMap = Map.fromList $ map invert thingIds
+         mapPair (a,b) = ( (Map.!) thingToIDMap a, (Map.!) thingToIDMap b )
+         forGraph = map mapPair  $ Set.toList $ endoscope elts mult
+         
+         theGraph = Graph.buildG (0, length thing - 1 ) forGraph
+         theInvertGraph = Graph.transposeG theGraph
+         --filterLeaves :: (a, [a]) -> Bool
+         --filterLeaves (a, b)
+          --     | a [] = True
+    -- 
+      --         | a [a] = True
+        --       | otherwise = False
+
+    
+         --invert (a,b) = (b,a)
+        -- idToThingMap = Map.fromList $ map invert thingIds
+
+
+--thing = List.nub $ concat $ deTouple $ Set.toList $ endoTransThing 3
+--thingIds = zip thing [0..(length thing)]
+--thingToIDMap = Map.fromList thingIds
+--invert (a,b) = (b,a)
+--idToThingMap = Map.fromList $ map invert thingIds
+
+
+
 
 
 type Row = [Bool]
@@ -163,7 +198,7 @@ idempotents elts mult = filter isSame elts
 
 endoThing x = endoscope [0..(x-1)] (mulX x)
 idempThing x = idempotents [0..(x-1)] (mulX x)
-
+leavesThing x = getLeaves [0..(x-1)] (mulX x)
 
 --NEW IN OEIS?? Sum of orders of elements from the integers modulo n under multiplication
 --map length $ map endoThing [1..50]
@@ -201,15 +236,7 @@ endoSetIntersectThing x = endoscope (map Set.fromList $ powset [1..x]) Set.inter
 -- symmetric difference mult op for all subsets of n ?
 -- xor on boolean vectors of length n?
 
-deTouple = map deTouple'
-     where
-      deTouple' a = [fst a, snd a]
 
-thing = List.nub $ concat $ deTouple $ Set.toList $ endoTransThing 3
-thingIds = zip thing [0..(length thing)]
-thingToIDMap = Map.fromList thingIds
-invert (a,b) = (b,a)
-idToThingMap = Map.fromList $ map invert thingIds
 
 --Run it for 2 * order, 2*order + 1 see who gets hit more than once, first top count is entrypoint item
 --histogram of index, period
@@ -240,6 +267,9 @@ main = do print "Edges in monogenic inclusion graph of MatMul on Z2, new sequenc
           print $ map (length . endoThing) [1..50]
           print "Idempotents in Zn under multiply, OEIS A034444"         
           print $ map (length . idempThing) [1..50]
+          --print "Leaves of Zn under multiply"
+          --print $ (length . leavesThing ) [1..50]
+
           print "Edges in Tn, new sequence"
           print $ map (length . endoTransThing) [1..6]
           print "Idempotents in Tn, OEIS A000248"
@@ -247,7 +277,7 @@ main = do print "Edges in monogenic inclusion graph of MatMul on Z2, new sequenc
           --print $ Set.elems $ endoTransThing 3
           --print $ Set.toList $ endoTransThing 3
           --print $ map pairToList $ Set.toList $ endoTransThing 3
-          print "Leaves of Tn"
+          print "Leaves of Tn, NOT WORKING YET"
           print $ transLeaves 3 --[1..6]
           print "Edges in Sn, OEIS A060014"
           print $ map (length . endoPermThing) [1..6]
