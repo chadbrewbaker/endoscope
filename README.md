@@ -1,24 +1,23 @@
 # endoscope
 Toolkit for analysis of endofunctions on small sets
 
-Input some function a -> a -> a.
+Input some function ::  a -> a -> a.
+
+* Examples include Zn under addition, Zn under multiplication, boolean matrix multiplication, Conway's game of life on a toroidal grid, ...
 
 Input a generator [a].
 
 Outputs:
 
-Monogenic inclusion graph
+* Graph of the endofunction under iteration
 
-Index, period, idempotent, cycleEntry of each element.
+* Index, period, idempotent, cycleEntry of each element.
 
-Idempotents
+* Idempotent functions
 
-Tree-likes
+* Reluctant functions
 
-Connected components
+* Connected components
 
-Min detection set (without idempotent) for each connected component
-
-
-
+* Min dominating set of the detection graph.  For two functions f and g; g detects f if f^i == g for some number of iterations i.
 
