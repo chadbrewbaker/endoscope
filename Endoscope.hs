@@ -225,6 +225,7 @@ leavesMM x = getLeaves (matsZ2 x) mmult
 
 endoMAddThing x =  endoscope (matsZ2 x) madd
 idempMAddThing x = idempotents (matsZ2 x) madd
+leavesMAddThing x = getLeaves (matsZ2 x) madd
 --map length $ map endoMAddThing [1..4]
 --[3,26,966,120836]
 
@@ -256,44 +257,51 @@ endoSetIntersectThing x = endoscope (map Set.fromList $ powset [1..x]) Set.inter
 --      where
 --        deTuple x = concat((fst x) (snd x))
 
-main = do print "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
+main = do putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
           print $ map (length . endoMMThing) [1..3]
-          print "Idempotents in BMM, OEIS A086907 and OEIS A132186"
+          putStrLn "Idempotents in BMM, OEIS A086907 and OEIS A132186"
           print $ map (length . idempMM) [1..3]
-          print "Leaves in BMM, ??"
-          print $ map (length . leavesMM) [1..4]
+          putStrLn "Leaves in BMM, ??"
+          print $ map (length . leavesMM) [1..3]
+          putStrLn ""
 
-
-          print "Edges in monogenic inclusion graph of co-MatMul on Z2, new sequence"
+          putStrLn "Edges in monogenic inclusion graph of co-MatMul on Z2, new sequence"
           print $ map (length . endoMAddThing) [1..3]
-          print "Idempotents in coBMM, need the sixth term to narrow down candidates"
+          putStrLn "Idempotents in coBMM, need the sixth term to narrow down candidates"
           print $ map (length . idempMAddThing) [1..3] -- 1,4,10,22,46...
-          print "Edges in monogenic inclusion graph of multiply on Zn, new sequence"
+          putStrLn "Leaves in coBMM, ?"
+          print $ map (length . leavesMAddThing) [1..3] 
+          putStrLn ""
+
+          putStrLn "Edges in monogenic inclusion graph of multiply on Zn, new sequence"
           print $ map (length . endoThing) [1..50]
-          print "Idempotents in Zn under multiply, OEIS A034444"         
+          putStrLn "Idempotents in Zn under multiply, OEIS A034444"         
           print $ map (length . idempThing) [1..50]
-          print "Leaves of Zn under multiply, new sequence"
+          putStrLn "Leaves of Zn under multiply, new sequence"
           print $ map (length . leavesThing ) [1..50]
+          putStrLn ""
 
-          print "Edges in Tn, new sequence"
+          putStrLn "Edges in Tn, new sequence"
           print $ map (length . endoTransThing) [1..6]
-          print "Idempotents in Tn, OEIS A000248"
+          putStrLn "Idempotents in Tn, OEIS A000248"
           print $ map (length . idempTransThing) [1..6]
-          print "Leaves of Tn, new seqence"
+          putStrLn "Leaves of Tn, new seqence"
           print $ map (length.transLeaves) [1..5] -- [1,3,15,138,1720,27180]
+          putStrLn ""
 
-          print "Edges in Sn, OEIS A060014"
+          putStrLn "Edges in Sn, OEIS A060014"
           print $ map (length . endoPermThing) [1..6]
-          print "Idempotents in Sn, only the identity function"
+          putStrLn "Idempotents in Sn, only the identity function"
           print $ map (length . idempPermThing) [1..6]
-          print "Leaves in Sn, ???"
+          putStrLn "Leaves in Sn, ???"
           print $ map (length . leavesPermThing) [1..6]
+          putStrLn ""
 
-          print "Edges in monogenic inclusion graph of add on Zn, OEIS A057660"
+          putStrLn "Edges in monogenic inclusion graph of add on Zn, OEIS A057660"
           print $ map (length . endoAddThing) [1..50]
-          print "Idempotents of add on Zn, just zero"
+          putStrLn "Idempotents of add on Zn, just zero"
           print $ map (length . idempAddThing) [1..50]
-          print "Leaves of add on Zn, ???"
+          putStrLn "Leaves of add on Zn, ???"
           print $ map (length . idempAddThing) [1..50]
           --print "Edges in monogenic inclusion graph of Powerset under union"
           --print $ map length $ map endoSetThing [1..5]    
