@@ -80,6 +80,7 @@ perm x =  List.permutations [0..x-1]
 
 
 
+
 mono' :: Ord a => (a -> a -> a) -> (a,a) -> Set (a,a) -> Set (a,a)
 mono' mult (primal, current) accum = if Set.member (primal,next) accum then accum else mono' mult (primal, next) (Set.insert (primal,next) accum)
     where
@@ -88,6 +89,33 @@ mono' mult (primal, current) accum = if Set.member (primal,next) accum then accu
 mono :: Ord a =>  (a -> a -> a) -> a -> Set (a,a)
 mono mult primal = mono' mult (primal,primal) Set.empty
 
+-- [(generator,[index elements], [cycle elements]) ]
+indexAndCycle :: Ord a => a -> (a ->a ->a) -> (a, [a], [a] )
+indexAndCycle elt mult = (elt, singles, cycles)
+    where 
+        doubleSize = 2*2 *  Set.size  (mono' mult (elt,elt) Set.empty)
+        boundMult = mult elt
+        toCount elts = (head elts, length elts)
+        histo =  map toCount $ List.group $ List.sort $ take doubleSize $ iterate boundMult elt           
+        isSingle (a,len) = len == 1
+        singles = map fst $ filter isSingle histo 
+        cycles = map fst $ filter (not . isSingle) histo
+
+
+
+indexAndCycleCounts elt mult =   compact $ indexAndCycle elt mult
+          where 
+                  compact  (a, xs, ys) = (length xs, length ys)
+                
+--allCounts :: Ord a => [a] -> (a ->a ->a) -> [(b,b)]
+allCounts [] mult = []
+allCounts [x] mult = [indexAndCycleCounts x mult]
+allCounts (x:xs) mult = indexAndCycleCounts x mult  : allCounts xs mult 
+
+allHistos :: Ord a => [a] -> (a ->a ->a) -> [(a, [a], [a] )]
+allHistos [] mult = []
+allHistos [x] mult = [indexAndCycle x mult]
+allHistos (x:xs) mult = indexAndCycle x mult : allHistos xs mult 
 
 -- endoscope :: generator -> endoFunc -> Set (a,a)
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
@@ -257,7 +285,25 @@ endoSetIntersectThing x = endoscope (map Set.fromList $ powset [1..x]) Set.inter
 --      where
 --        deTuple x = concat((fst x) (snd x))
 
-main = do putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
+
+--TODO:
+--Print histogram of (index,period)
+--Print count of reluctant functions
+--Print count of cyclic functions
+--Print count of connected components in function iteration graph. Does this equal idempotent count? Proof?
+--Print size of min dom set on detection graph
+
+
+groupLengths = map getLen 
+       where
+         getLen a = (length a, head a) 
+
+main = do 
+          --print $ allHistos [0..(12-1)] (mulX 12)
+          print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
+          putStrLn "" 
+
+          putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
           print $ map (length . endoMMThing) [1..3]
           putStrLn "Idempotents in BMM, OEIS A086907 and OEIS A132186"
           print $ map (length . idempMM) [1..3]
