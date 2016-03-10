@@ -292,6 +292,10 @@ endoSetIntersectThing x = endoscope (map Set.fromList $ powset [1..x]) Set.inter
 --Print count of cyclic functions
 --Print count of connected components in function iteration graph. Does this equal idempotent count? Proof?
 --Print size of min dom set on detection graph
+--Print iteration graph
+--Print detection graph
+--Experiment if you mutliply from different connected components A,B does the result always end up in component C?
+--Transfer matrix method to get generating function footprint of the iteration graph?
 
 
 groupLengths = map getLen 
