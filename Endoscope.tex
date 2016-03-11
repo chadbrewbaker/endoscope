@@ -12,6 +12,8 @@
 \usepackage{listings}
 \usepackage{hyperref}
 \usepackage{amsthm}
+\usepackage{graphicx}
+\graphicspath{ {img/} }
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{defn}[thm]{Definition}
@@ -41,6 +43,51 @@ In this paper we study functions $f$ from a finite set $a$ back into $a$.
 f :: a -> a 
 \end{lstlisting}
 
+A combinatorial interpretation of, $x^{y}$  is the number of functions from a size $y$ set to an $x$ set.
+
+\begin{lstlisting}
+f :: x -> y 
+\end{lstlisting}
+
+This duality between exponentials and functions gives us a common medium to synthesize views from both algebraic and functional viewpoints.
+
+Recall this algebraic identity we learned in primary school.
+
+$$(a^{m})^{n} = a^{mn}$$
+
+Translated from exponential notation into functional notation we have:
+\begin{lstlisting}
+curry :: n -> m -> a
+curry' :: (n,m) -> a
+\end{lstlisting}
+
+% I can never remember how to format umlauts etc in latex, http://tex.stackexchange.com/questions/57743/how-to-write-ä-and-other-umlauts-and-accented-letters-in-bibliography
+Ref Curry, Haskell (1934), "Functionality in Combinatory Logic", Proceedings of the National Academy of Sciences 20, pp. 584?590
+
+J. Richard B\"{u}chi \cite{buchi1962} described how we can use either transition (multiplication) tables, transition graphs, or transition trees to give us the viewpoint that best fits our discussion. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=4cm]{buchiTrinity}
+    \caption{Diagram made by B\"{u}chi}
+   
+\end{figure}
+
+Discuss binary endofunctions as endofunctions when you fix the left (right) argument, fix the row (column) of the multiplication table.
+
+\begin{lstlisting}
+f :: a -> a -> a 
+\end{lstlisting}
+
+Discuss Magmas vs Semigroups. Function composition is associative so we are dealing with semigroups.
+
+%Extend our results to M{n} full set of full Magmas on $n$ elements? What crazy stuff happens? All the full mult tables on $n$ elements that are not associative plus $T_{n}$.
+%Magma elements still have index and period. Only our results that require associativity will break.
+
+%Automata (rows have labels of a different type than the column labels or entries) vs binary endofunctions.
+
+%Given a multiplication tablediscuss how to test for totality O(n^2) make sure every entry is in bounds, asssociativity, identiy O(n) look at identity row/column, divisibility, and communitivy.
 
 \begin{defn}[Endofunction] A function with domain and co-domain of the same type.\end{defn}
 \begin{defn}[Semigroup] A collection of endofunctions closed under composition. Each endofunction may be thought of as a row in it's multiplication table. \end{defn}
@@ -176,13 +223,19 @@ Leaves
 
 Group-likes
 
-
-
 \section{$Z_{2}$ matrix multiplication }
-Boolean matrix-matrix multiplication (BMM) is a fundamental step in many computations from transitive closure to parsing context free grammars.
+Boolean matrix-matrix multiplication (BMM) is a fundamental subroutine in many computations from transitive closure to parsing context free grammars\cite{valiant1975}.
+
+Traditionally the complexity of BMM is written by $O(n^{\omega})$, where $\omega$ approaches $2$ as researchers derive faster BMM algorithms.
+%My personal conjecture is that BMM is $O((n log n)^{2} )$ (Chad)
+% bmm :: m -> m -> m
+% $m^{m \times m}$ is the function space where $m$ is a set the size $2^{m \times m}$
+%Of course we aren't grabbing all functions from that pair, just those that are legal BMM results.
+%Can we come up with a compression method formulation as a BMM lower bound?
+%Compress the serialized m,m,m triples into FSA. Do FSA minimization. Feasible on 3x3 BMM? (2^{9})*(2^{9}) words in the language. All words length 27.
+%What permutation of these triples allows us to reduce average rejection prefix for an illegal word? Thats feasible for 2x2 BMM very quickly.
 
 Combinatorially we take pairs of incoming and outgoing edges then choose among them.
-
 
 Edges under iteration
 
