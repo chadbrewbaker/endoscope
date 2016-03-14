@@ -14,6 +14,8 @@ import qualified Data.List as List
 
 import qualified Data.Map as Map
 
+import System.Exit
+
 import MatMul
 import Control.Monad
 type Leaves = Integer
@@ -24,6 +26,43 @@ powset = Control.Monad.filterM (const [True, False])
 transMult a b =  Vector.toList $Vector.backpermute (Vector.fromList a) (Vector.fromList b)
 trans x = replicateM (length x) x
 perm x =  List.permutations [0..x-1]
+
+barehline = "\\hline\n"
+hline = "\\\\ \\hline\n"
+
+stripChars :: String -> String -> String
+--stripChars x y = y
+stripChars = filter . flip notElem
+
+zipCat :: [a] -> [[a]] -> [[a]]
+zipCat = zipWith (curry smush)
+    where
+      smush (a,b) = a : b
+
+latexTable :: (Show a) => String -> [a] -> [[a]] -> String
+latexTable op lab x = prefix ++ barehline ++ stripChars "\"" (op ++ "&" ++ tosArr lab) ++ stripChars "\"" (eachRow (zipCat lab x)) ++ suffix
+
+     where
+        prefix = "\\begin{tabular}{ |"++ cstring (length x)  ++ " }"
+        elt = "c |"
+        cstring x = concat $ replicate (x+1) elt
+        suffix ="\\end{tabular}"
+        
+
+eachRow :: (Show a) => [[a]] -> String        
+eachRow [[]] = ""
+eachRow [] = ""
+eachRow [x] = tosArr x
+eachRow (x:xs) = tosArr x ++ eachRow xs
+
+tosArr :: (Show a) => [a] -> String
+tosArr (x:xs) = show x ++ tosArr' xs ++ hline
+
+
+tosArr' :: (Show a) => [a] -> String
+tosArr' [] = []
+tosArr' [x] = "&" ++ show x
+tosArr' (x:xs) = "&" ++ show x ++  tosArr' xs 
 
 --endomult :: e -> e -> e
 --endomult = undefined
@@ -117,6 +156,19 @@ allHistos [] mult = []
 allHistos [x] mult = [indexAndCycle x mult]
 allHistos (x:xs) mult = indexAndCycle x mult : allHistos xs mult 
 
+
+cartProd :: Ord a => [a] -> (a -> a -> a) -> [a]
+cartProd elts mult = map multOnPair $ Control.Monad.liftM2 (,) elts elts --mapped 
+     where 
+      multOnPair (x,y) = mult x y
+mTable :: [a]  -> (a -> a -> a) -> [a]
+mTable  elts mult = [ mult x y | x <- elts , y <- elts ]
+
+chunkRows :: Int -> [a] ->[[a]]
+chunkRows n [] = []
+chunkRows n (xs) = take n xs : chunkRows n (drop n xs) 
+ 
+
 -- endoscope :: generator -> endoFunc -> Set (a,a)
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
 endoscope elts mult = foldr (Set.union . mono mult) Set.empty elts
@@ -158,17 +210,6 @@ getLeaves elts mult =  filter isLeaf $ zip (Array.indices theInvertGraph) (Array
          isLeaf (i, [x]) | i == x  = True
          isLeaf (_, _) = False
 
-                      
-         --filterLeaves :: (a, [a]) -> Bool
-         --filterLeaves (a, b)
-          --     | a [] = True
-    -- 
-      --         | a [a] = True
-        --       | otherwise = False
-
-    
-         --invert (a,b) = (b,a)
-        -- idToThingMap = Map.fromList $ map invert thingIds
 
 
 --thing = List.nub $ concat $ deTouple $ Set.toList $ endoTransThing 3
@@ -304,8 +345,12 @@ groupLengths = map getLen
 
 main = do 
           --print $ allHistos [0..(12-1)] (mulX 12)
+          
+          --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
+          --System.Exit.exitSuccess
           print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
           putStrLn "" 
+
 
           putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
           print $ map (length . endoMMThing) [1..3]
@@ -337,6 +382,10 @@ main = do
           print $ map (length . idempTransThing) [1..6]
           putStrLn "Leaves of Tn, new seqence"
           print $ map (length.transLeaves) [1..5] -- [1,3,15,138,1720,27180]
+          print $ map transLeaves [1..3] 
+          print $ trans [0..(1-1)]
+          print $ trans [0..(2-1)]
+          print $ trans [0..(3-1)]
           putStrLn ""
 
           putStrLn "Edges in Sn, OEIS A060014"
