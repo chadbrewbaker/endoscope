@@ -117,7 +117,41 @@ tosArr' (x:xs) = "&" ++ show x ++  tosArr' xs
 -- classify :: mult a -> (Index,Period, FirstCycle, Idempotent)
 --classify :: (a -> a -> a) -> a -> (Index, Period, a , a )
 
+monoStates' :: Ord a => Int -> (a -> a -> a) -> (a,a) -> [(a,a)]
+monoStates' 0 mult (primal, current) = []
+monoStates' 1 mult (primal, current) = [(current, mult primal current)] 
+monoStates' budget mult (primal, current) = (current, nextState) : monoStates' (budget -1) mult (primal, nextState) 
+      where
+        nextState = mult primal current
 
+monoStates :: Ord a =>  Int -> (a -> a -> a) -> a -> [(a,a)]
+monoStates budget mult primal = List.nub $ monoStates' budget mult (primal, primal)
+
+
+getMonoEdges :: Ord a => [a] -> (a -> a -> a) -> [(a,a)]
+getMonoEdges elts mult = foldr ((++) . boundthing) [] elts
+     where
+       boundthing = monoStates (length elts) mult
+
+leftMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
+leftMultEdgs [] _ _ = []
+leftMultEdges (x:xs) mult elt = (elt, mult elt x) : leftMultEdges xs mult elt 
+
+
+rightMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
+rightMultEdgs [] _  _= []
+rightMultEdges (x:xs) mult elt =  (x, mult elt x) : rightMultEdges xs mult elt 
+
+
+getLeftMultEdges :: Ord a => [a] -> (a -> a -> a) -> [(a,a)]
+getLeftMultEdges elts mult = foldr ((++) . boundthing) [] elts
+      where
+        boundthing = leftMultEdges elts mult
+
+getRightMultEdges :: Ord a => [a] -> (a -> a -> a) -> [(a,a)]
+getRightMultEdges elts mult = foldr ((++) . boundthing) [] elts
+      where
+        boundthing = rightMultEdges elts mult
 
 
 mono' :: Ord a => (a -> a -> a) -> (a,a) -> Set (a,a) -> Set (a,a)
@@ -210,6 +244,45 @@ getLeaves elts mult =  filter isLeaf $ zip (Array.indices theInvertGraph) (Array
          isLeaf (i, [x]) | i == x  = True
          isLeaf (_, _) = False
 
+
+getGraph elts mult = theGraph
+  where
+         thing = List.nub $ concat $ deTouple $ Set.toList $  endoscope elts mult
+         thingIds = zip thing [0..(length thing)]
+         thingToIDMap = Map.fromList thingIds
+         mapPair (a,b) = ( (Map.!) thingToIDMap a, (Map.!) thingToIDMap b )
+         forGraph = map mapPair  $ Set.toList $ endoscope elts mult
+         theGraph = Graph.buildG (0, length thing - 1 ) forGraph
+
+
+getMonoReachabilityGraph elts mult = g
+  where 
+        g = Graph.buildG (0, length elts - 1 ) $ Set.toList $ endoscope elts mult
+
+getMonoDetectionGraph elts mult = Graph.buildG (0, length elts - 1 ) $ addLoops (length elts) $ Graph.edges $ Graph.transposeG $ getMonoReachabilityGraph elts mult
+
+
+addLoops :: Int -> [(Int,Int)] -> [(Int,Int)]
+--addLoops k []  = []
+addLoops k xs =  List.nub $ getLoops k ++ xs
+    
+getLoop y = (y,y)
+getLoops n = map getLoop [0..(n-1)]
+
+
+-- f^i =  f,g,h,f  -> [(f,g), (g,h), (h,f)]
+getMonoTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $ getMonoEdges elts mults
+
+--Add edges to row elts of multiplication table
+-- (f,g) -> h  use (f,h) as edge
+getTransitionGraph = undefined
+
+-- (f,g) -> h  use (g,h) as edge
+getRightTransitionGraph = undefined
+
+
+--getTransitionTree = undefined
+--getRightTransitionTree = undefined
 
 
 --thing = List.nub $ concat $ deTouple $ Set.toList $ endoTransThing 3
@@ -338,16 +411,58 @@ endoSetIntersectThing x = endoscope (map Set.fromList $ powset [1..x]) Set.inter
 --Experiment if you mutliply from different connected components A,B does the result always end up in component C?
 --Transfer matrix method to get generating function footprint of the iteration graph?
 
+gvizpre :: String -> String
+gvizpre name = "digraph " ++ name ++"{" 
+
+gvizpost = "}"
+ --digraph graphname {
+ --    a -> b -> c;
+ --    b -> d;
+-- }
+
+--edgesToDot :: (Show a) => [(a,a)] -> String
+edgesToDot :: Show a => [(a,a)] -> String
+edgesToDot = concatMap pairToDot
+       where
+          pairToDot (i,j) = "   " ++ show i ++ "->" ++ show j ++ "; \n" 
+
+
+ --a [label="Foo"];
+getNodeLabel :: (Show a, Show b) => (a,b) -> String
+getNodeLabel (index, elt) = "   " ++ show index ++ " [label=\"" ++ show elt ++ "\"];\n"
+
+getNodeLabels :: (Show a, Show b) => [(a,b)] -> String
+getNodeLabels [] = ""
+getNodeLabels [(i,elt)] = getNodeLabel (i,elt)
+getNodeLabels (x:xs) = getNodeLabel x ++ getNodeLabels xs
+
+zipIndex :: [a] -> [(Int,a)]
+zipIndex [] = []
+zipIndex xs = zip [0..(length xs)] xs
 
 groupLengths = map getLen 
        where
          getLen a = (length a, head a) 
 
+
+
+
+
 main = do 
           --print $ allHistos [0..(12-1)] (mulX 12)
           
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
-          --System.Exit.exitSuccess
+          putStrLn $ gvizpre "MonoReachabilityGraph"
+          
+          putStrLn  $ getNodeLabels $ zipIndex [0..(12-1)]
+          
+        
+          --putStrLn $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(12-1)] (mulX 12)
+         -- putStrLn $ edgesToDot $ edges $ getMonoDetectionGraph [0..(12-1)] (mulX 12)
+          putStrLn $ edgesToDot $ edges $ getMonoTransitionGraph [0..(12-1)] (mulX 12)
+         
+          putStrLn gvizpost
+          System.Exit.exitSuccess
           print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
           putStrLn "" 
 
