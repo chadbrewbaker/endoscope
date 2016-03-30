@@ -18,6 +18,10 @@ import System.Exit
 
 import MatMul
 import Control.Monad
+import qualified System.Process as Process
+--import System.Environment
+-- getargs gets the command line args if we need them
+
 type Leaves = Integer
 type Treelike = Bool
 
@@ -195,14 +199,32 @@ cartProd :: Ord a => [a] -> (a -> a -> a) -> [a]
 cartProd elts mult = map multOnPair $ Control.Monad.liftM2 (,) elts elts --mapped 
      where 
       multOnPair (x,y) = mult x y
-mTable :: [a]  -> (a -> a -> a) -> [a]
-mTable  elts mult = [ mult x y | x <- elts , y <- elts ]
+
+
+mTable :: [a] -> (a -> a -> a) -> [[a]]
+mTable  elts mult =  chunkRows (length elts) $ [ mult x y | x <- elts , y <- elts ]
+
+rightmTable elts mult = List.transpose $ mTable elts mult
+
+mTrips :: [a] -> (a -> a -> a) -> [(a,a,a)]
+mTrips elts mult =  [ (mult x y, x, y) | x <- elts , y <- elts ]
+
+filterLeft (a,b,_) = (a,b)
+filterRight (a,_,c) = (a,c)
+
+swap (a,b) = (b,a)
+
+leftMultEdgeList elts mult = map filterLeft $ mTrips elts mult
+invLeftMultEdgeList elts mult = map swap $ leftMultEdgeList elts mult
+
+rightMultEdgeList elts mult = map filterRight $ mTrips elts mult
+invRightMultEdgeList elts mult = map swap $ rightMultEdgeList elts mult
+
 
 chunkRows :: Int -> [a] ->[[a]]
 chunkRows n [] = []
 chunkRows n (xs) = take n xs : chunkRows n (drop n xs) 
  
-
 -- endoscope :: generator -> endoFunc -> Set (a,a)
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
 endoscope elts mult = foldr (Set.union . mono mult) Set.empty elts
@@ -273,12 +295,13 @@ getLoops n = map getLoop [0..(n-1)]
 -- f^i =  f,g,h,f  -> [(f,g), (g,h), (h,f)]
 getMonoTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $ getMonoEdges elts mults
 
---Add edges to row elts of multiplication table
--- (f,g) -> h  use (f,h) as edge
-getTransitionGraph = undefined
+-- f = (g,h) use (f,g) as edge
+getTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $  getLeftMultEdges elts mults
 
--- (f,g) -> h  use (g,h) as edge
-getRightTransitionGraph = undefined
+
+
+-- f = (g,h) use (f,h) as edge
+getLeftTransitionGraph = undefined
 
 
 --getTransitionTree = undefined
@@ -445,6 +468,34 @@ groupLengths = map getLen
          getLen a = (length a, head a) 
 
 
+genZnMultGraphs n = do
+                     let fname = "znMultData/z" ++ (show n) ++ "MonoReachabilityGraph.gv"
+                     writeFile  fname $ gvizpre "MonoReachabilityGraph"
+                     appendFile fname $ getNodeLabels $ zipIndex [0..(n-1)]
+                     appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(n-1)] (mulX n)
+                     appendFile fname gvizpost
+                     Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ (show n) ++ "MR.png"
+
+
+                     let dname = "znMultData/z" ++ (show n) ++ "MonoDetectionGraph.gv"
+                     writeFile  dname $ gvizpre "MonoDetectionGraph"
+                     appendFile dname $ getNodeLabels $ zipIndex [0..(n-1)]
+                     appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
+                     appendFile dname gvizpost
+                     Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ (show n) ++ "MD.png"
+                     
+                     let s = "znMultData/z" ++ (show n) ++ "MD"
+                     jabber <- Process.readProcess "python" ["min_dom_z3.py",dname, s] ""
+                     print jabber
+
+                     let qname = "znMultData/z" ++ (show n) ++ "MonoTransitionGraph.gv"
+                     writeFile  qname $ gvizpre "MonoTransitionGraph"
+                     appendFile qname $ getNodeLabels $ zipIndex [0..(n-1)]
+                     appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph [0..(n-1)] (mulX n)
+                     appendFile qname gvizpost
+                     Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ (show n) ++ "MT.png"
+                     
+
 
 
 
@@ -452,17 +503,53 @@ main = do
           --print $ allHistos [0..(12-1)] (mulX 12)
           
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
-          putStrLn $ gvizpre "MonoReachabilityGraph"
           
-          putStrLn  $ getNodeLabels $ zipIndex [0..(12-1)]
+          genZnMultGraphs  7
+          Process.system "mkdir -p bmmData"
+          writeFile "bmmData/bork.cork" "baz bar" 
           
-        
-          --putStrLn $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(12-1)] (mulX 12)
-         -- putStrLn $ edgesToDot $ edges $ getMonoDetectionGraph [0..(12-1)] (mulX 12)
-          putStrLn $ edgesToDot $ edges $ getMonoTransitionGraph [0..(12-1)] (mulX 12)
+          Process.system "mkdir -p znMultData"
+
+          let fname = "znMultData/z12MonoReachabilityGraph.gv"
+          writeFile  fname $ gvizpre "MonoReachabilityGraph"
+          appendFile fname $ getNodeLabels $ zipIndex [0..(12-1)]
+          appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(12-1)] (mulX 12)
+          appendFile fname gvizpost
+          Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z12MR.png"
          
-          putStrLn gvizpost
-          System.Exit.exitSuccess
+          let dname = "znMultData/z12MonoDetectionGraph.gv"
+          writeFile  dname $ gvizpre "MonoDetectionGraph"
+          appendFile dname $ getNodeLabels $ zipIndex [0..(12-1)]
+          appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(12-1)] (mulX 12)
+          appendFile dname gvizpost
+          Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z12MD.png"
+          --jabber <- Process.system $ "python min_dom_z3.py " ++ dname ++ " znMultData/z12MD"
+          jabber <- Process.readProcess "python" ["min_dom_z3.py",dname,"znMultData/z12MD"] ""
+          putStrLn "Min dom size"
+          print jabber
+
+
+          putStrLn "------"
+          --
+
+
+
+
+          -- s <- Process.readProcess "echo" ["6"] ""
+          -- print s
+
+          --Need to get feedback from python how big the min dom set is
+          --Need to iterate this on all graphs up to a certain size
+
+          -- putStrLn $ edgesToDot $ edges $ getMonoDetectionGraph [0..(12-1)] (mulX 12)
+        
+
+          --putStrLn $ edgesToDot $ edges $ getMonoTransitionGraph [0..(12-1)] (mulX 12)
+          -- Graph from left mult edges
+          -- Graph from right mult edges   
+
+
+          --System.Exit.exitSuccess
           print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
           putStrLn "" 
 
