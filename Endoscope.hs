@@ -202,7 +202,7 @@ cartProd elts mult = map multOnPair $ Control.Monad.liftM2 (,) elts elts --mappe
 
 
 mTable :: [a] -> (a -> a -> a) -> [[a]]
-mTable  elts mult =  chunkRows (length elts) $ [ mult x y | x <- elts , y <- elts ]
+mTable  elts mult =  chunkRows (length elts)  [ mult x y | x <- elts , y <- elts ]
 
 rightmTable elts mult = List.transpose $ mTable elts mult
 
@@ -296,12 +296,12 @@ getLoops n = map getLoop [0..(n-1)]
 getMonoTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $ getMonoEdges elts mults
 
 -- f = (g,h) use (f,g) as edge
-getTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $  getLeftMultEdges elts mults
+getLeftTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $  getLeftMultEdges elts mults
 
 
 
 -- f = (g,h) use (f,h) as edge
-getLeftTransitionGraph = undefined
+getRightTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $  getRightMultEdges elts mults
 
 
 --getTransitionTree = undefined
@@ -469,31 +469,31 @@ groupLengths = map getLen
 
 
 genZnMultGraphs n = do
-                     let fname = "znMultData/z" ++ (show n) ++ "MonoReachabilityGraph.gv"
+                     let fname = "znMultData/z" ++ show n ++ "MonoReachabilityGraph.gv"
                      writeFile  fname $ gvizpre "MonoReachabilityGraph"
                      appendFile fname $ getNodeLabels $ zipIndex [0..(n-1)]
                      appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(n-1)] (mulX n)
                      appendFile fname gvizpost
-                     Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ (show n) ++ "MR.png"
+                     Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ show n ++ "MR.png"
 
 
-                     let dname = "znMultData/z" ++ (show n) ++ "MonoDetectionGraph.gv"
+                     let dname = "znMultData/z" ++ show n ++ "MonoDetectionGraph.gv"
                      writeFile  dname $ gvizpre "MonoDetectionGraph"
                      appendFile dname $ getNodeLabels $ zipIndex [0..(n-1)]
                      appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
                      appendFile dname gvizpost
-                     Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ (show n) ++ "MD.png"
+                     Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
                      
-                     let s = "znMultData/z" ++ (show n) ++ "MD"
+                     let s = "znMultData/z" ++ show n ++ "MD"
                      jabber <- Process.readProcess "python" ["min_dom_z3.py",dname, s] ""
                      print jabber
 
-                     let qname = "znMultData/z" ++ (show n) ++ "MonoTransitionGraph.gv"
+                     let qname = "znMultData/z" ++ show n ++ "MonoTransitionGraph.gv"
                      writeFile  qname $ gvizpre "MonoTransitionGraph"
                      appendFile qname $ getNodeLabels $ zipIndex [0..(n-1)]
                      appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph [0..(n-1)] (mulX n)
                      appendFile qname gvizpost
-                     Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ (show n) ++ "MT.png"
+                     Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
                      
 
 
