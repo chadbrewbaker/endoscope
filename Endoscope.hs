@@ -468,7 +468,36 @@ groupLengths = map getLen
          getLen a = (length a, head a) 
 
 
+genGraphs n mult elts = do
+                           Process.system "mkdir -p znMultData"
+                           let fname = "znMultData/z" ++ show n ++ "MonoReachabilityGraph.gv"
+                           writeFile  fname $ gvizpre "MonoReachabilityGraph"
+                           appendFile fname $ getNodeLabels $ zipIndex [0..(n-1)]
+                           appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(n-1)] (mulX n)
+                           appendFile fname gvizpost
+                           Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ show n ++ "MR.png"
+
+
+                           let dname = "znMultData/z" ++ show n ++ "MonoDetectionGraph.gv"
+                           writeFile  dname $ gvizpre "MonoDetectionGraph"
+                           appendFile dname $ getNodeLabels $ zipIndex [0..(n-1)]
+                           appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
+                           appendFile dname gvizpost
+                           Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
+ 
+                           let s = "znMultData/z" ++ show n ++ "MD"
+                           jabber <- Process.readProcess "python" ["min_dom_z3.py",dname, s] ""
+                           print jabber
+
+                           let qname = "znMultData/z" ++ show n ++ "MonoTransitionGraph.gv"
+                           writeFile  qname $ gvizpre "MonoTransitionGraph"
+                           appendFile qname $ getNodeLabels $ zipIndex [0..(n-1)]
+                           appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph [0..(n-1)] (mulX n)
+                           appendFile qname gvizpost
+                           Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
+
 genZnMultGraphs n = do
+                     Process.system "mkdir -p znMultData"
                      let fname = "znMultData/z" ++ show n ++ "MonoReachabilityGraph.gv"
                      writeFile  fname $ gvizpre "MonoReachabilityGraph"
                      appendFile fname $ getNodeLabels $ zipIndex [0..(n-1)]
@@ -496,15 +525,17 @@ genZnMultGraphs n = do
                      Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
                      
 
-
+--Get (gengraphs n mult elts) working
+--Get gengraphs to dump some data to in memory data structures like the min dom set sizes
+--Make a printgraphinfo that prints the cached graph info for OEIS seqs.
 
 
 main = do 
           --print $ allHistos [0..(12-1)] (mulX 12)
           
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
+          forM_ [1..11] $ \n -> genZnMultGraphs  n
           
-          genZnMultGraphs  7
           Process.system "mkdir -p bmmData"
           writeFile "bmmData/bork.cork" "baz bar" 
           
