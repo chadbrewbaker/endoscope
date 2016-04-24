@@ -336,6 +336,17 @@ addX :: Int -> Int -> Int -> Int
 addX m x y = mod (x+y) m
 
 
+--Speed this up using Borwein tables?
+factorial 0 = 1
+factorial 1 = 1
+factorial n = n * (factorial (n-1))
+
+binomial n k = div (factorial n) ( (factorial k) * (factorial (n-k)) )
+
+aksBinomial n k = mod (binomial n k) n 
+
+
+
 -- cycle through print mult x x == x
 
 idempotents :: Ord a => [a] -> (a -> a -> a) -> [a]
