@@ -37,16 +37,21 @@ trans x = replicateM (length x) x
 polyToTrans f =  map getIndex [0..n-1] 
             where
             rmod i j = mod j i
-            getIndex i = (rmod n) $ foldl (+) 0  $ map (cmult i) $ zip f (take n $ [0..])
+            getIndex i = rmod n $ sum $ map (cmult i) $ zip f (take n [0..])
             n = length f
             cmult i (coef, expon)  = mod (coef * (i^expon) ) n
 
 polyTransPairs x = zip (trans x) ( map polyToTrans $ trans x) 
+forbTrans n =  Set.difference (Set.fromList (trans n))  $ Set.fromList $ map snd  $ polyTransPairs n
 
+polySet n = Set.fromList $ map snd  $ polyTransPairs [0..n]
+fullSet n = Set.fromList $ trans [0..n]
+forbTransSet n = Set.difference (fullSet n) (polySet n)
+ 
 -- Chad: I think this is a generalization of the AKS primality test.
 --       If we can prove an endofunction doesn't exist, or two of the same exist,
 --       then we have shown that $n$ is composite. 
-a058067 n = Set.size $Set.fromList $ map snd  $ polyTransPairs [0..n]
+a058067 n = Set.size $ Set.fromList $ map snd  $ polyTransPairs [0..n]
 
 perm x =  List.permutations [0..x-1]
 
