@@ -19,6 +19,7 @@ import System.Exit
 import MatMul
 import Control.Monad
 import qualified System.Process as Process
+import Data.List
 --import System.Environment
 -- getargs gets the command line args if we need them
 
@@ -28,7 +29,25 @@ type Treelike = Bool
 powset = Control.Monad.filterM (const [True, False])
 
 transMult a b =  Vector.toList $Vector.backpermute (Vector.fromList a) (Vector.fromList b)
+
 trans x = replicateM (length x) x
+
+        
+-- Applies a polynomial transformation to the identiy function
+polyToTrans f =  map getIndex [0..n-1] 
+            where
+            rmod i j = mod j i
+            getIndex i = (rmod n) $ foldl (+) 0  $ map (cmult i) $ zip f (take n $ [0..])
+            n = length f
+            cmult i (coef, expon)  = mod (coef * (i^expon) ) n
+
+polyTransPairs x = zip (trans x) ( map polyToTrans $ trans x) 
+
+-- Chad: I think this is a generalization of the AKS primality test.
+--       If we can prove an endofunction doesn't exist, or two of the same exist,
+--       then we have shown that $n$ is composite. 
+a058067 n = Set.size $Set.fromList $ map snd  $ polyTransPairs [0..n]
+
 perm x =  List.permutations [0..x-1]
 
 barehline = "\\hline\n"
@@ -316,8 +335,6 @@ getRightTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.
 
 
 
-
-
 type Row = [Bool]
 type BoolMatrix = [Row]
 
@@ -337,6 +354,7 @@ addX m x y = mod (x+y) m
 
 
 --Speed this up using Borwein tables?
+-- https://gist.github.com/chadbrewbaker/8445183
 factorial 0 = 1
 factorial 1 = 1
 factorial n = n * (factorial (n-1))
@@ -344,8 +362,7 @@ factorial n = n * (factorial (n-1))
 binomial n k = div (factorial n) ( (factorial k) * (factorial (n-k)) )
 
 aksBinomial n k = mod (binomial n k) n 
-
-
+--https://rosettacode.org/wiki/AKS_test_for_primes#Haskell
 
 -- cycle through print mult x x == x
 
@@ -376,6 +393,8 @@ leavesThing x = getLeaves [0..(x-1)] (mulX x)
 
 --NEW IN OEIS?? Sum of orders of elements from the integers modulo n under multiplication
 --map length $ map endoThing [1..50]
+
+endoPolyThing x = endoscope (trans [0..(x-1)]) transMult 
 
 endoPermThing x =  endoscope (perm x) transMult
 idempPermThing x = idempotents (perm x) transMult
