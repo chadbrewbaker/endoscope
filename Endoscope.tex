@@ -11,7 +11,7 @@
 \documentclass{article}
 \usepackage{listings}
 \lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small}}{}
-
+\usepackage{minted}
 \usepackage{hyperref}
 \usepackage{amsthm}
 \usepackage{graphicx}
@@ -34,7 +34,7 @@
 \maketitle
 
 \begin{abstract}
-We examine properties of endofunctions on a finite set under self-composition (iteration). Using this technique we derive an optimal search strategy for black box subgroup detection. A result of \cite{anderson2005} gives insight into generic AKS style primality tests and integer factorization. We also gain insight into the complexity of boolean matrix multiplication and the structure of compositional equality relations.
+We examine properties of functions $f(A)\rightarrow A$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, and integer factorization.
 \end{abstract}
 
 \section{Introduction}
@@ -44,6 +44,8 @@ In this paper we study functions $f$ from a finite set $a$ back into $a$.
 \begin{code}
 f :: a -> a 
 \end{code}
+% Alternatively, \inputminted{Haskell}{Program.hs}
+
 
 A combinatorial interpretation of, $x^{y}$  is the number of functions from a size $y$ set to an $x$ set.
 
@@ -62,11 +64,18 @@ Translated from exponential notation into functional notation we have:
 curry :: n -> m -> a
 curry' :: (n,m) -> a
 \end{code}
+We name these functions "curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, and a function that passes a tuple of values.
 
-% I can never remember how to format umlauts etc in latex, http://tex.stackexchange.com/questions/57743/how-to-write-ä-and-other-umlauts-and-accented-letters-in-bibliography
-Ref Curry, Haskell (1934), "Functionality in Combinatory Logic", Proceedings of the National Academy of Sciences 20, pp. 584?590
+For endofuctions with two arguments $f(A,A)\rightarrow A$ Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
+\begin{code}
+f :: (a,a) -> a
+g :: a -> a -> a
+h :: a -> (a -> a)
+\end{code}
 
-J. Richard B\"{u}chi \cite{buchi1962} described how we can use either transition (multiplication) tables, transition graphs, or transition trees to give us the viewpoint that best fits our discussion. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
+% I can never remember how to format umlauts etc in latex, http://tex.stackexchange.com/questions/57743/how-to-write-ä-and-other-umlauts-and-accented-letters-in-bibliography (Chad)
+
+J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either transition (multiplication) tables, transition graphs, or transition trees to give us the viewpoint that best fits a discussion on two variable endofunctions. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
 
 
 \begin{figure}[h]
@@ -76,11 +85,6 @@ J. Richard B\"{u}chi \cite{buchi1962} described how we can use either transition
    
 \end{figure}
 
-Discuss binary endofunctions as endofunctions when you fix the left (right) argument, fix the row (column) of the multiplication table.
-
-\begin{code}
-f :: a -> a -> a 
-\end{code}
 
 \cite{alon1985} showed applications of endofuction composition for optimizing network transfers.
 
@@ -216,7 +220,7 @@ Idempotents (connected components)
 
 Histogram of index,period.
 
-Forgetfull functions
+Reluctant functions
 
 Leaves
 
@@ -235,7 +239,7 @@ Idempotents (connected components)
 
 Histogram of index,period.
 
-Forgetfull functions
+Reluctant functions
 
 Leaves
 
@@ -280,19 +284,20 @@ When this function returns a nonzero value, we know that $n$ is a composite numb
 % If $k$ is  sqrt(n) +1 then either that bottom $k!$ whacks out a chuck, or it leaves that largest number unfactored.
 %can we take successive $2^{i}!$ to find the order of magnitude of the smallest prime divisor?
 
-\section{$Z_{2}$ matrix multiplication }
-Boolean matrix-matrix multiplication (BMM) is a fundamental subroutine in many computations from transitive closure to parsing context free grammars\cite{valiant1975}.
+\section{Boolean matrix multiplication }
+Boolean ($Z_{2}$) matrix-matrix multiplication (BMM) is a fundamental subroutine. Computations from transitive closure to parsing context free grammars\cite{valiant1975} reduce to BMM.
 
-Traditionally the complexity of BMM is written by $O(n^{\omega})$, where $\omega$ approaches $2$ as researchers derive faster BMM algorithms.
+Traditionally the complexity of BMM is written by $O(n^{\omega})$, where $\omega$ shrinks from the brute force value of $3$ as researchers since Strassen have derived more efficient BMM algorithms.
+
+Endoscope groups matrices into connected components under self composition. 
 %My personal conjecture is that BMM is $O((n log n)^{2} )$ (Chad)
+% http://math.stanford.edu/~church/BCCGU-On-cap-sets-and-the-group-theoretic-approach-to-matrix-multiplication.pdf Note that the Umans conjecture for \omega=2 was just disproven.
 % bmm :: m -> m -> m
 % $m^{m \times m}$ is the function space where $m$ is a set the size $2^{m \times m}$
 %Of course we aren't grabbing all functions from that pair, just those that are legal BMM results.
 %Can we come up with a compression method formulation as a BMM lower bound?
 %Compress the serialized m,m,m triples into FSA. Do FSA minimization. Feasible on 3x3 BMM? (2^{9})*(2^{9}) words in the language. All words length 27.
 %What permutation of these triples allows us to reduce average rejection prefix for an illegal word? Thats feasible for 2x2 BMM very quickly.
-
-Combinatorially we take pairs of incoming and outgoing edges then choose among them.
 
 Edges under iteration
 
@@ -311,12 +316,47 @@ What does this tell us about the complexity of BMM?
 
 
 
-\section{$Z_{2}$ matrix co-multiplication }
+\section{Boolean matrix co-multiplication }
 We define boolean matrix-matrix co-multiply (co-BMM) as the function where we have swapped the multiply and addition operators. 
 
 As a data type, each resulting entry is the $n$-tuple consisting of entries that are either $A_{i,k}$ or $B_{k,j}$. If view $A$ and $B$ as graphs, with rows being outgoing edges and columns as incoming edges; we have $n$-tuples of chosing either the incoming or outgoing edge for each entry.
 
-% http://math.stanford.edu/~church/BCCGU-On-cap-sets-and-the-group-theoretic-approach-to-matrix-multiplication.pdf Note that the Umans conjecture for \omega=2 was just disproven.
+
+Edges under iteration
+
+Idempotents (connected components), same as fixed points?
+
+Histogram of index,period.
+
+Forgetful functions
+
+Leaves
+
+Group-likes
+
+
+What does this tell us about the complexity of co-BMM?
+
+\section{Transformation polynomials }
+In \cite{ashlock1990} the concept of a permutation polynomial over $Z_{n}$ was studied. These are polynomials with coefficients and powers from $Z_{n}$ that form a permutation function on $Z_{n}$. We extend this concept to all polynomials with coefficients and powers from $Z_{n}$. Interestingly, transformation polynomials seem to form a generalization of the AKS style primality test as prime numbers and composite numbers have form radically different sets of transformations.
+
+Edges under iteration
+
+Idempotents (connected components), same as fixed points?
+
+Histogram of index,period.
+
+Reluctant functions
+
+Leaves
+
+Group-likes
+
+
+What does this tell us about the complexity of co-BMM?
+
+
+
 
 \section{Compositional equality relations}
 
