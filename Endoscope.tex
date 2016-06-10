@@ -39,13 +39,11 @@ We examine properties of functions $f(A)\rightarrow A$ on a finite set by chasin
 
 \section{Introduction}
 
-In this paper we study functions $f$ from a finite set $a$ back into $a$.
-
+In this paper we study functions $f$ from a finite set $a$ back into $a$, $f(a) \rightarrow a$. In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
 \begin{code}
 f :: a -> a 
 \end{code}
 % Alternatively, \inputminted{Haskell}{Program.hs}
-
 
 A combinatorial interpretation of, $x^{y}$  is the number of functions from a size $y$ set to an $x$ set.
 
@@ -53,7 +51,9 @@ A combinatorial interpretation of, $x^{y}$  is the number of functions from a si
 f :: x -> y 
 \end{code}
 
-This duality between exponentials and functions gives us a common medium to synthesize views from both algebraic and functional viewpoints.
+This duality between exponentials and functions gives us a common medium to synthesize algebraic and functional viewpoints.
+
+It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms, \cite{boyanov2003}.
 
 Recall this algebraic identity we learned in primary school.
 
@@ -88,7 +88,7 @@ J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either tr
 
 \cite{alon1985} showed applications of endofuction composition for optimizing network transfers.
 
-Discuss Magmas vs Semigroups. Function composition is associative so we are dealing with semigroups.
+Here are definitions that are used.
 
 %Extend our results to M{n} full set of full Magmas on $n$ elements? What crazy stuff happens? All the full mult tables on $n$ elements that are not associative plus $T_{n}$.
 %Magma elements still have index and period. Only our results that require associativity will break.
@@ -356,11 +356,7 @@ Group-likes
 What does this tell us about the complexity of co-BMM?
 
 
-
-
 \section{Compositional equality relations}
-
-
 
 \appendix{New  OEIS Sequences}
 
