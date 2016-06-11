@@ -1,0 +1,37 @@
+name:                endoscope
+version:             0.1.0.0
+synopsis:            Toolkit for endofunction analysis
+description:         Please see README.md
+homepage:            https://github.com/chadbrewbaker/endoscope#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Chad Brewbaker
+maintainer:          crb002@gmail.com
+copyright:           2008-2016 Chad Brewbaker
+category:            Library
+build-type:          Simple
+cabal-version:       >=1.10
+
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     BrewLib
+                       MatMul
+                       Endoscope
+  build-depends:       base >=4.7 && < 5, 
+                       vector,
+                       containers,
+                       array,
+                       process
+executable endoscope
+  hs-source-dirs:      src
+  main-is:             main.hs
+  other-modules:       BrewLib
+                       MatMul
+                       Endoscope
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       containers,
+                       vector,
+                       array,
+                       process

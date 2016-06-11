@@ -565,7 +565,7 @@ genZnMultGraphs n = do
 --Make a printgraphinfo that prints the cached graph info for OEIS seqs.
 
 
-main = do 
+endoMain = do 
           --print $ allHistos [0..(12-1)] (mulX 12)
           
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
