@@ -34,24 +34,24 @@
 \maketitle
 
 \begin{abstract}
-We examine properties of functions $f(A)\rightarrow A$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, and integer factorization.
+We examine sets of functions $f(a)\rightarrow a$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, and integer factorization.
 \end{abstract}
 
 \section{Introduction}
 
-In this paper we study functions $f$ from a finite set $a$ back into $a$, $f(a) \rightarrow a$. In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
+In this paper we study sets of functions $f$ from a finite set $a$ back into $a$, $f(a) \rightarrow a$. In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
 \begin{code}
 f :: a -> a 
 \end{code}
 % Alternatively, \inputminted{Haskell}{Program.hs}
 
-A combinatorial interpretation of, $x^{y}$  is the number of functions from a size $y$ set to an $x$ set.
+The number of functions from a size $y$ set to a size $x$ set is $x^{y}$. In Haskell notation we write the type signature of such a mapping as
 
 \begin{code}
 f :: x -> y 
 \end{code}
 
-This duality between exponentials and functions gives us a common medium to synthesize algebraic and functional viewpoints.
+This duality between exponentials and functions gives a translation between algebraic and functional viewpoints.
 
 It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms, \cite{boyanov2003}.
 
@@ -66,7 +66,7 @@ curry' :: (n,m) -> a
 \end{code}
 We name these functions "curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, and a function that passes a tuple of values.
 
-For endofuctions with two arguments $f(A,A)\rightarrow A$ Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
+For endofuctions with two arguments $f(A,A)\rightarrow A$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
 \begin{code}
 f :: (a,a) -> a
 g :: a -> a -> a
@@ -75,8 +75,7 @@ h :: a -> (a -> a)
 
 % I can never remember how to format umlauts etc in latex, http://tex.stackexchange.com/questions/57743/how-to-write-ä-and-other-umlauts-and-accented-letters-in-bibliography (Chad)
 
-J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either transition (multiplication) tables, transition graphs, or transition trees to give us the viewpoint that best fits a discussion on two variable endofunctions. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
-
+J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either transition (multiplication) tables, transition graphs, or transition trees to give us a viewpoint that best fits a discussion on two variable endofunctions. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
 
 \begin{figure}[h]
     \centering
@@ -358,7 +357,7 @@ What does this tell us about the complexity of co-BMM?
 
 \section{Compositional equality relations}
 
-\appendix{New  OEIS Sequences}
+\appendix{New OEIS Sequences}
 
 \appendix{Haskell source}
 
