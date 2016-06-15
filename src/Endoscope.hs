@@ -521,7 +521,7 @@ genGraphs n mult elts = do
                            Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
  
                            let s = "znMultData/z" ++ show n ++ "MD"
-                           jabber <- Process.readProcess "python" ["min_dom_z3.py",dname, s] ""
+                           jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
                            print jabber
 
                            let qname = "znMultData/z" ++ show n ++ "MonoTransitionGraph.gv"
@@ -549,7 +549,7 @@ genZnMultGraphs n = do
                      Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
                      
                      let s = "znMultData/z" ++ show n ++ "MD"
-                     jabber <- Process.readProcess "python" ["min_dom_z3.py",dname, s] ""
+                     jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
                      print jabber
 
                      let qname = "znMultData/z" ++ show n ++ "MonoTransitionGraph.gv"
@@ -590,7 +590,7 @@ endoMain = do
           appendFile dname gvizpost
           Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z12MD.png"
           --jabber <- Process.system $ "python min_dom_z3.py " ++ dname ++ " znMultData/z12MD"
-          jabber <- Process.readProcess "python" ["min_dom_z3.py",dname,"znMultData/z12MD"] ""
+          jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname,"znMultData/z12MD"] ""
           putStrLn "Min dom size"
           print jabber
 
