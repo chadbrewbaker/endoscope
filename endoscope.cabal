@@ -35,3 +35,12 @@ executable endoscope
                        vector,
                        array,
                        process
+
+test-suite tests
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Unit.hs
+  build-depends:       base,
+                       endoscope,
+                       hspec,
+                       HUnit
