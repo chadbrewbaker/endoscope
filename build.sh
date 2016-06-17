@@ -1,3 +1,3 @@
-pdflatex Endoscope
+pdflatex -shell-escape Endoscope
 bibtex Endoscope
-pdflatex Endoscope
+pdflatex -shell-escape Endoscope

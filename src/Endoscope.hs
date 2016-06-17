@@ -32,25 +32,25 @@ transMult a b =  Vector.toList $Vector.backpermute (Vector.fromList a) (Vector.f
 
 trans x = replicateM (length x) x
 
-        
+
 -- Applies a polynomial transformation to the identiy function
-polyToTrans f =  map getIndex [0..n-1] 
+polyToTrans f =  map getIndex [0..n-1]
             where
             rmod i j = mod j i
             getIndex i = rmod n $ sum $ map (cmult i) $ zip f (take n [0..])
             n = length f
             cmult i (coef, expon)  = mod (coef * (i^expon) ) n
 
-polyTransPairs x = zip (trans x) ( map polyToTrans $ trans x) 
+polyTransPairs x = zip (trans x) ( map polyToTrans $ trans x)
 forbTrans n =  Set.difference (Set.fromList (trans n))  $ Set.fromList $ map snd  $ polyTransPairs n
 
 polySet n = Set.fromList $ map snd  $ polyTransPairs [0..n]
 fullSet n = Set.fromList $ trans [0..n]
 forbTransSet n = Set.difference (fullSet n) (polySet n)
- 
+
 -- Chad: I think this is a generalization of the AKS primality test.
 --       If we can prove an endofunction doesn't exist, or two of the same exist,
---       then we have shown that $n$ is composite. 
+--       then we have shown that $n$ is composite.
 a058067 n = Set.size $ Set.fromList $ map snd  $ polyTransPairs [0..n]
 
 perm x =  List.permutations [0..x-1]
@@ -75,9 +75,9 @@ latexTable op lab x = prefix ++ barehline ++ stripChars "\"" (op ++ "&" ++ tosAr
         elt = "c |"
         cstring x = concat $ replicate (x+1) elt
         suffix ="\\end{tabular}"
-        
 
-eachRow :: (Show a) => [[a]] -> String        
+
+eachRow :: (Show a) => [[a]] -> String
 eachRow [[]] = ""
 eachRow [] = ""
 eachRow [x] = tosArr x
@@ -90,7 +90,7 @@ tosArr (x:xs) = show x ++ tosArr' xs ++ hline
 tosArr' :: (Show a) => [a] -> String
 tosArr' [] = []
 tosArr' [x] = "&" ++ show x
-tosArr' (x:xs) = "&" ++ show x ++  tosArr' xs 
+tosArr' (x:xs) = "&" ++ show x ++  tosArr' xs
 
 --endomult :: e -> e -> e
 --endomult = undefined
@@ -117,7 +117,7 @@ tosArr' (x:xs) = "&" ++ show x ++  tosArr' xs
 
 -- getLolipopHistogram :: FunSet -> [ (IntCount,IntInex, IntPeriod)]
 
--- getCompositionTable :: FunSet - > [ [IntFunID]] 
+-- getCompositionTable :: FunSet - > [ [IntFunID]]
 
 
 -- gadgets :: (a -> a) -> [[a]]
@@ -147,8 +147,8 @@ tosArr' (x:xs) = "&" ++ show x ++  tosArr' xs
 
 monoStates' :: Ord a => Int -> (a -> a -> a) -> (a,a) -> [(a,a)]
 monoStates' 0 mult (primal, current) = []
-monoStates' 1 mult (primal, current) = [(current, mult primal current)] 
-monoStates' budget mult (primal, current) = (current, nextState) : monoStates' (budget -1) mult (primal, nextState) 
+monoStates' 1 mult (primal, current) = [(current, mult primal current)]
+monoStates' budget mult (primal, current) = (current, nextState) : monoStates' (budget -1) mult (primal, nextState)
       where
         nextState = mult primal current
 
@@ -163,12 +163,12 @@ getMonoEdges elts mult = foldr ((++) . boundthing) [] elts
 
 leftMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
 leftMultEdgs [] _ _ = []
-leftMultEdges (x:xs) mult elt = (elt, mult elt x) : leftMultEdges xs mult elt 
+leftMultEdges (x:xs) mult elt = (elt, mult elt x) : leftMultEdges xs mult elt
 
 
 rightMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
 rightMultEdgs [] _  _= []
-rightMultEdges (x:xs) mult elt =  (x, mult elt x) : rightMultEdges xs mult elt 
+rightMultEdges (x:xs) mult elt =  (x, mult elt x) : rightMultEdges xs mult elt
 
 
 getLeftMultEdges :: Ord a => [a] -> (a -> a -> a) -> [(a,a)]
@@ -193,35 +193,35 @@ mono mult primal = mono' mult (primal,primal) Set.empty
 -- [(generator,[index elements], [cycle elements]) ]
 indexAndCycle :: Ord a => a -> (a ->a ->a) -> (a, [a], [a] )
 indexAndCycle elt mult = (elt, singles, cycles)
-    where 
+    where
         doubleSize = 2*2 *  Set.size  (mono' mult (elt,elt) Set.empty)
         boundMult = mult elt
         toCount elts = (head elts, length elts)
-        histo =  map toCount $ List.group $ List.sort $ take doubleSize $ iterate boundMult elt           
+        histo =  map toCount $ List.group $ List.sort $ take doubleSize $ iterate boundMult elt
         isSingle (a,len) = len == 1
-        singles = map fst $ filter isSingle histo 
+        singles = map fst $ filter isSingle histo
         cycles = map fst $ filter (not . isSingle) histo
 
 
 
 indexAndCycleCounts elt mult =   compact $ indexAndCycle elt mult
-          where 
+          where
                   compact  (a, xs, ys) = (length xs, length ys)
-                
+
 --allCounts :: Ord a => [a] -> (a ->a ->a) -> [(b,b)]
 allCounts [] mult = []
 allCounts [x] mult = [indexAndCycleCounts x mult]
-allCounts (x:xs) mult = indexAndCycleCounts x mult  : allCounts xs mult 
+allCounts (x:xs) mult = indexAndCycleCounts x mult  : allCounts xs mult
 
 allHistos :: Ord a => [a] -> (a ->a ->a) -> [(a, [a], [a] )]
 allHistos [] mult = []
 allHistos [x] mult = [indexAndCycle x mult]
-allHistos (x:xs) mult = indexAndCycle x mult : allHistos xs mult 
+allHistos (x:xs) mult = indexAndCycle x mult : allHistos xs mult
 
 
 cartProd :: Ord a => [a] -> (a -> a -> a) -> [a]
-cartProd elts mult = map multOnPair $ Control.Monad.liftM2 (,) elts elts --mapped 
-     where 
+cartProd elts mult = map multOnPair $ Control.Monad.liftM2 (,) elts elts --mapped
+     where
       multOnPair (x,y) = mult x y
 
 
@@ -247,18 +247,18 @@ invRightMultEdgeList elts mult = map swap $ rightMultEdgeList elts mult
 
 chunkRows :: Int -> [a] ->[[a]]
 chunkRows n [] = []
-chunkRows n (xs) = take n xs : chunkRows n (drop n xs) 
- 
+chunkRows n (xs) = take n xs : chunkRows n (drop n xs)
+
 -- endoscope :: generator -> endoFunc -> Set (a,a)
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
 endoscope elts mult = foldr (Set.union . mono mult) Set.empty elts
 --endoscope' elts mult = foldr Set.union Set.empty (map (mono' mult) elts )
 --foldr :: (a -> b -> b) -> b -> [a] -> b
-                    
+
 monoGraph :: Bounds -> Set Edge -> Graph
 monoGraph b edges = Graph.buildG b $ Set.toList edges
 
-leaves =  Graph.indegree 
+leaves =  Graph.indegree
 -- Graph.indegree :: Graph -> Table Int
 
 
@@ -276,14 +276,14 @@ deTouple = map deTouple'
 --Array.elems
 getLeaves elts mult =  filter isLeaf $ zip (Array.indices theInvertGraph) (Array.elems theInvertGraph)--thingIds
 --getLeaves elts mult = Graph.indegree $ monoGraph bounds $ endoscope' elts mult
-     where 
-        -- bounds = (length elts, length elts)      
+     where
+        -- bounds = (length elts, length elts)
          thingIds = zip thing [0..(length thing)]
          thing = List.nub $ concat $ deTouple $ Set.toList $  endoscope elts mult
          thingToIDMap = Map.fromList thingIds
          mapPair (a,b) = ( (Map.!) thingToIDMap a, (Map.!) thingToIDMap b )
          forGraph = map mapPair  $ Set.toList $ endoscope elts mult
-         
+
          theGraph = Graph.buildG (0, length thing - 1 ) forGraph
          theInvertGraph = Graph.transposeG theGraph
          isLeaf (i,[]) = True
@@ -302,7 +302,7 @@ getGraph elts mult = theGraph
 
 
 getMonoReachabilityGraph elts mult = g
-  where 
+  where
         g = Graph.buildG (0, length elts - 1 ) $ Set.toList $ endoscope elts mult
 
 getMonoDetectionGraph elts mult = Graph.buildG (0, length elts - 1 ) $ addLoops (length elts) $ Graph.edges $ Graph.transposeG $ getMonoReachabilityGraph elts mult
@@ -311,7 +311,7 @@ getMonoDetectionGraph elts mult = Graph.buildG (0, length elts - 1 ) $ addLoops 
 addLoops :: Int -> [(Int,Int)] -> [(Int,Int)]
 --addLoops k []  = []
 addLoops k xs =  List.nub $ getLoops k ++ xs
-    
+
 getLoop y = (y,y)
 getLoops n = map getLoop [0..(n-1)]
 
@@ -366,15 +366,15 @@ factorial n = n * (factorial (n-1))
 
 binomial n k = div (factorial n) ( (factorial k) * (factorial (n-k)) )
 
-aksBinomial n k = mod (binomial n k) n 
+aksBinomial n k = mod (binomial n k) n
 --https://rosettacode.org/wiki/AKS_test_for_primes#Haskell
 
 -- cycle through print mult x x == x
 
 idempotents :: Ord a => [a] -> (a -> a -> a) -> [a]
-idempotents elts mult = filter isSame elts 
+idempotents elts mult = filter isSame elts
        where
-        isSame x = mult x x == x 
+        isSame x = mult x x == x
 
 
 -- Examples:
@@ -390,7 +390,7 @@ idempotents elts mult = filter isSame elts
 
 
 --transMult :: [a] -> [a] -> [a]
---transMult x:xs ys = 
+--transMult x:xs ys =
 
 endoThing x = endoscope [0..(x-1)] (mulX x)
 idempThing x = idempotents [0..(x-1)] (mulX x)
@@ -399,7 +399,7 @@ leavesThing x = getLeaves [0..(x-1)] (mulX x)
 --NEW IN OEIS?? Sum of orders of elements from the integers modulo n under multiplication
 --map length $ map endoThing [1..50]
 
-endoPolyThing x = endoscope (trans [0..(x-1)]) transMult 
+endoPolyThing x = endoscope (trans [0..(x-1)]) transMult
 
 endoPermThing x =  endoscope (perm x) transMult
 idempPermThing x = idempotents (perm x) transMult
@@ -470,7 +470,7 @@ endoSetIntersectThing x = endoscope (map Set.fromList $ powset [1..x]) Set.inter
 --Transfer matrix method to get generating function footprint of the iteration graph?
 
 gvizpre :: String -> String
-gvizpre name = "digraph " ++ name ++"{" 
+gvizpre name = "digraph " ++ name ++"{"
 
 gvizpost = "}"
  --digraph graphname {
@@ -482,7 +482,7 @@ gvizpost = "}"
 edgesToDot :: Show a => [(a,a)] -> String
 edgesToDot = concatMap pairToDot
        where
-          pairToDot (i,j) = "   " ++ show i ++ "->" ++ show j ++ "; \n" 
+          pairToDot (i,j) = "   " ++ show i ++ "->" ++ show j ++ "; \n"
 
 
  --a [label="Foo"];
@@ -498,9 +498,9 @@ zipIndex :: [a] -> [(Int,a)]
 zipIndex [] = []
 zipIndex xs = zip [0..(length xs)] xs
 
-groupLengths = map getLen 
+groupLengths = map getLen
        where
-         getLen a = (length a, head a) 
+         getLen a = (length a, head a)
 
 
 genGraphs n mult elts = do
@@ -519,7 +519,7 @@ genGraphs n mult elts = do
                            appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
                            appendFile dname gvizpost
                            Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
- 
+
                            let s = "znMultData/z" ++ show n ++ "MD"
                            jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
                            print jabber
@@ -547,7 +547,7 @@ genZnMultGraphs n = do
                      appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
                      appendFile dname gvizpost
                      Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
-                     
+
                      let s = "znMultData/z" ++ show n ++ "MD"
                      jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
                      print jabber
@@ -558,22 +558,22 @@ genZnMultGraphs n = do
                      appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph [0..(n-1)] (mulX n)
                      appendFile qname gvizpost
                      Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
-                     
+
 
 --Get (gengraphs n mult elts) working
 --Get gengraphs to dump some data to in memory data structures like the min dom set sizes
 --Make a printgraphinfo that prints the cached graph info for OEIS seqs.
 
 
-endoMain = do 
+endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)
-          
+
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
           forM_ [1..11] $ \n -> genZnMultGraphs  n
-          
+
           Process.system "mkdir -p bmmData"
-          writeFile "bmmData/bork.cork" "baz bar" 
-          
+          writeFile "bmmData/bork.cork" "baz bar"
+
           Process.system "mkdir -p znMultData"
 
           let fname = "znMultData/z12MonoReachabilityGraph.gv"
@@ -582,7 +582,7 @@ endoMain = do
           appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(12-1)] (mulX 12)
           appendFile fname gvizpost
           Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z12MR.png"
-         
+
           let dname = "znMultData/z12MonoDetectionGraph.gv"
           writeFile  dname $ gvizpre "MonoDetectionGraph"
           appendFile dname $ getNodeLabels $ zipIndex [0..(12-1)]
@@ -608,16 +608,16 @@ endoMain = do
           --Need to iterate this on all graphs up to a certain size
 
           -- putStrLn $ edgesToDot $ edges $ getMonoDetectionGraph [0..(12-1)] (mulX 12)
-        
+
 
           --putStrLn $ edgesToDot $ edges $ getMonoTransitionGraph [0..(12-1)] (mulX 12)
           -- Graph from left mult edges
-          -- Graph from right mult edges   
+          -- Graph from right mult edges
 
 
           --System.Exit.exitSuccess
           print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
-          putStrLn "" 
+          putStrLn ""
 
 
           putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
@@ -633,12 +633,12 @@ endoMain = do
           putStrLn "Idempotents in coBMM, need the sixth term to narrow down candidates"
           print $ map (length . idempMAddThing) [1..3] -- 1,4,10,22,46...
           putStrLn "Leaves in coBMM, ?"
-          print $ map (length . leavesMAddThing) [1..3] 
+          print $ map (length . leavesMAddThing) [1..3]
           putStrLn ""
 
           putStrLn "Edges in monogenic inclusion graph of multiply on Zn, new sequence"
           print $ map (length . endoThing) [1..50]
-          putStrLn "Idempotents in Zn under multiply, OEIS A034444"         
+          putStrLn "Idempotents in Zn under multiply, OEIS A034444"
           print $ map (length . idempThing) [1..50]
           putStrLn "Leaves of Zn under multiply, new sequence"
           print $ map (length . leavesThing ) [1..50]
@@ -650,7 +650,7 @@ endoMain = do
           print $ map (length . idempTransThing) [1..6]
           putStrLn "Leaves of Tn, new seqence"
           print $ map (length.transLeaves) [1..5] -- [1,3,15,138,1720,27180]
-          print $ map transLeaves [1..3] 
+          print $ map transLeaves [1..3]
           print $ trans [0..(1-1)]
           print $ trans [0..(2-1)]
           print $ trans [0..(3-1)]
@@ -670,12 +670,12 @@ endoMain = do
           print $ map (length . idempAddThing) [1..50]
           putStrLn "Leaves of add on Zn, ???"
           print $ map (length . idempAddThing) [1..50]
+          writeFile  "transpoly.seq" $ show (map a058067 $ [0..5])
           --print "Edges in monogenic inclusion graph of Powerset under union"
-          --print $ map length $ map endoSetThing [1..5]    
+          --print $ map length $ map endoSetThing [1..5]
           --print "Edges in monogenic inclusion graph of Powerset under intersection"
           --print $ map length $ map endoSetIntersectThing [1..5]
 --mono :: Ord a => (a -> a -> a) -> (a,a) -> Set a -> Set a
 --mono mult (primal,current) accum
 
    -- print $ components $ endoscope (3*3) mul7
-    

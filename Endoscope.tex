@@ -337,7 +337,14 @@ Group-likes
 What does this tell us about the complexity of co-BMM?
 
 \section{Transformation polynomials }
-In \cite{ashlock1990} the concept of a permutation polynomial over $Z_{n}$ was studied. These are polynomials with coefficients and powers from $Z_{n}$ that form a permutation function on $Z_{n}$. We extend this concept to all polynomials with coefficients and powers from $Z_{n}$. Interestingly, transformation polynomials seem to form a generalization of the AKS style primality test as prime numbers and composite numbers have form radically different sets of transformations.
+In \cite{ashlock1990} the concept of a permutation polynomial over $Z_{n}$ was studied. These are polynomials with coefficients and powers from $Z_{n}$ that form a permutation function on $Z_{n}$. We extend this concept to all polynomials with coefficients and powers from $Z_{n}$. 
+
+Note that when $n$ is prime then all $n^n$ transformations exist, but when $n$ is a composite such as 4 or 6, then the distinct transformations is exponentially smaller. Here are the values for small $n$ starting at $n=1$.
+\inputminted{text}{transpoly.seq}
+
+Interestingly, this would seem to imply that transformation polynomials form a generalization of the AKS class of primality tests. We can enumerate the polynomials over $Z_{n}$, claiming ``composite" when two polynomials make an equivalent transformation, and ``prime" when we have shown all are unique or all are unique up to some AKS style bound. 
+
+In \cite{bhargava2000} the formula for the number of polynomial functions in $Z_{n}$ was derived to be, $$\prod_{k=0}^{n-1} {n\over gcd(n, k!)} $$.
 
 Edges under iteration
 
