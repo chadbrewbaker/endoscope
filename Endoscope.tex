@@ -20,6 +20,7 @@
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{defn}[thm]{Definition}
 \newtheorem{exam}[thm]{Example}
+\newtheorem{subroutine}[thm]{Subroutine}
 %\theoremstyle{plain}
 %\newtheorem{thm}{Theorem}% reset theorem numbering for each chapter
 
@@ -45,6 +46,7 @@ f :: a -> a
 \end{code}
 % Alternatively, \inputminted{Haskell}{Program.hs}
 
+
 The number of functions from a size $y$ set to a size $x$ set is $x^{y}$. In Haskell notation we write the type signature of such a mapping as
 
 \begin{code}
@@ -53,7 +55,7 @@ f :: x -> y
 
 This duality between exponentials and functions gives a translation between algebraic and functional viewpoints.
 
-It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms, \cite{boyanov2003}.
+It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms \cite{boyanov2003}.
 
 Recall this algebraic identity we learned in primary school.
 
@@ -64,9 +66,9 @@ Translated from exponential notation into functional notation we have:
 curry :: n -> m -> a
 curry' :: (n,m) -> a
 \end{code}
-We name these functions "curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, and a function that passes a tuple of values.
+We name these functions ``curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, and a function that passes a tuple of values.
 
-For endofuctions with two arguments $f(A,A)\rightarrow A$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
+For endofuctions with two arguments $f(a,a)\rightarrow a$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
 \begin{code}
 f :: (a,a) -> a
 g :: a -> a -> a
@@ -85,7 +87,7 @@ J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either tr
 \end{figure}
 
 
-\cite{alon1985} showed applications of endofuction composition for optimizing network transfers.
+
 
 Here are definitions that are used.
 
@@ -176,6 +178,48 @@ Crypto hash to  256 bits
 Count
 
 
+Here are the subroutines discussed.
+
+\begin{subroutine}[Boolean Matrix Multiplication] 
+
+\end{subroutine}
+
+\begin{subroutine}[Factorial] 
+
+\end{subroutine}
+
+\begin{subroutine}[Binomial Coefficent] 
+
+\end{subroutine}
+
+\begin{subroutine}[Index of endofuction] 
+
+\end{subroutine}
+
+\begin{subroutine}[Period of endofuction] 
+
+\end{subroutine}
+
+\begin{subroutine}[Primality] 
+
+\end{subroutine}
+
+\begin{subroutine}[Integer factorization] 
+
+\end{subroutine}
+
+\begin{subroutine}[Integer addition] 
+
+\end{subroutine}
+
+\begin{subroutine}[Integer multiplication]
+
+Grid method: $O({log(n)^2 \over p})$ O(1) multiplications for each digit pair followed by a reduction of their products.
+
+F{\"u}rer's method \cite{furer2007} approaches a conjectured lower bound of $O(n log n)$.
+\end{subroutine}
+
+
 \section{Permutation function spaces, $S_{n}$}
 
 \begin{code}
@@ -244,45 +288,6 @@ Leaves
 
 Group-likes
 
-\section{AKS Primality endofuction}
-%In \cite{anderson2005}  proved that an iterated endofuction 
-
-Borwein \cite{borwein1985} showed us that computing $n!$ by successive multiplications was rather inneficient.
-
-$$8! =2*3*2^{2}*5*(2*3)*7*(2^{3})$$
-
-Instead, we can take the table of all primes up to $n$, figure out how many times each prime factor is applied and exponentiate each prime factor once to the appropriate power.
-$$8! = 2^{7}*3^{2}*5*7$$
-
-Geotgheluck showed us how to compute binomial coefficients using prime factorizations, \cite{goetgheluck1987, goetgheluck1988}.
-
-
-% Chad 
-%Is Geotgheluck's method any faster than applying Borwein's to $n!, k!, (n-k)! $ then subtracting the denominator exponents?
-
-AKS noted that for prime numbers ${n \choose k}$ always is divisible by  $n$, since no term in the denominator less than $n$ is a factor. ${n! \over k! * (n-k)!}$
-
-However for composite numbers $n$ , some values of ${n \choose k}$ are not divisible by $n$.
-
-\begin{code}
-aksBinomial :: Integer -> Integer -> Integer
-aksBinomial n k = mod (binomial n k) n
-\end{code}
-
-When this function returns a nonzero value, we know that $n$ is a composite number.
-
-% $p(x)\equiv q(x)$ mod $(x^{r}-1 ,n)$ denotes both $p(x)\equiv q(x)$ mod $x^{r}-1$ and $p(x)\equiv q(x)$ mod $n$.
-
-% Chad
-% Can we use Borwein factorial simplification to cheat? Know that if $n$ is not prime then we don't need another entry into our prime table. $n$ will be a composite of others. With k= n-1 
-% binomial n k = binomial (n-1) (k-1) +  binomial (n-1) k
-
-%\prod_{i=1}^{k} {n +1 + i) \over i } \prod_{i=1}^{k} {n -(k -i)) \over i }
-
-
-% If $k$ is  sqrt(n) +1 then either that bottom $k!$ whacks out a chuck, or it leaves that largest number unfactored.
-%can we take successive $2^{i}!$ to find the order of magnitude of the smallest prime divisor?
-
 \section{Boolean matrix multiplication }
 Boolean ($Z_{2}$) matrix-matrix multiplication (BMM) is a fundamental subroutine. Computations from transitive closure to parsing context free grammars\cite{valiant1975} reduce to BMM.
 
@@ -344,6 +349,8 @@ Note that when $n$ is prime then all $n^n$ transformations exist, but when $n$ i
 
 Interestingly, this would seem to imply that transformation polynomials form a generalization of the AKS class of primality tests. We can enumerate the polynomials over $Z_{n}$, claiming ``composite" when two polynomials make an equivalent transformation, and ``prime" when we have shown all are unique or all are unique up to some AKS style bound. 
 
+
+\subsection{Functions in set}
 In \cite{bhargava2000} the formula for the number of polynomial functions in $Z_{n}$ was derived to be, $$\prod_{k=0}^{n-1} {n\over gcd(n, k!)} $$.
 
 Edges under iteration
@@ -359,10 +366,55 @@ Leaves
 Group-likes
 
 
-What does this tell us about the complexity of co-BMM?
+What does this tell us about the complexity of primality testsing and factoring?
 
 
 \section{Compositional equality relations}
+
+\section{Applications}
+Alon \cite{alon1985} demonstrated an application of endofuction composition for optimizing network transfers.
+
+\section{Scratch}
+Scratch space for musings. 
+\subsection{AKS Primality endofuction}
+%In \cite{anderson2005}  proved that an iterated endofuction 
+
+Borwein \cite{borwein1985} showed us that computing $n!$ by successive multiplications was rather inneficient.
+
+$$8! =2*3*2^{2}*5*(2*3)*7*(2^{3})$$
+
+Instead, we can take the table of all primes up to $n$, figure out how many times each prime factor is applied and exponentiate each prime factor once to the appropriate power.
+$$8! = 2^{7}*3^{2}*5*7$$
+
+Geotgheluck showed us how to compute binomial coefficients using prime factorizations, \cite{goetgheluck1987, goetgheluck1988}.
+
+
+% Chad 
+%Is Geotgheluck's method any faster than applying Borwein's to $n!, k!, (n-k)! $ then subtracting the denominator exponents?
+
+AKS noted that for prime numbers ${n \choose k}$ always is divisible by  $n$, since no term in the denominator less than $n$ is a factor. ${n! \over k! * (n-k)!}$
+
+However for composite numbers $n$ , some values of ${n \choose k}$ are not divisible by $n$.
+
+\begin{code}
+aksBinomial :: Integer -> Integer -> Integer
+aksBinomial n k = mod (binomial n k) n
+\end{code}
+
+When this function returns a nonzero value, we know that $n$ is a composite number.
+
+% $p(x)\equiv q(x)$ mod $(x^{r}-1 ,n)$ denotes both $p(x)\equiv q(x)$ mod $x^{r}-1$ and $p(x)\equiv q(x)$ mod $n$.
+
+% Chad
+% Can we use Borwein factorial simplification to cheat? Know that if $n$ is not prime then we don't need another entry into our prime table. $n$ will be a composite of others. With k= n-1 
+% binomial n k = binomial (n-1) (k-1) +  binomial (n-1) k
+
+%\prod_{i=1}^{k} {n +1 + i) \over i } \prod_{i=1}^{k} {n -(k -i)) \over i }
+
+
+% If $k$ is  sqrt(n) +1 then either that bottom $k!$ whacks out a chuck, or it leaves that largest number unfactored.
+%can we take successive $2^{i}!$ to find the order of magnitude of the smallest prime divisor?
+
 
 \appendix{New OEIS Sequences}
 
