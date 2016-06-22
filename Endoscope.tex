@@ -35,7 +35,7 @@
 \maketitle
 
 \begin{abstract}
-We examine sets of functions $f(a)\rightarrow a$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, and integer factorization.
+We examine sets of functions $f(a)\rightarrow a$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm\cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
 \end{abstract}
 
 \section{Introduction}
@@ -219,8 +219,31 @@ Grid method: $O({log(n)^2 \over p})$ O(1) multiplications for each digit pair fo
 F{\"u}rer's method \cite{furer2007} approaches a conjectured lower bound of $O(n log n)$.
 \end{subroutine}
 
+\section{Transformation function spaces, $T_{n}$}
+The as an analogue to Cayley's Theorem, all sets of endofunctions form as subsemigroup of the full transformation semigroup $T_{n}$. Demonstration of our techniques in detail on the entire set of $n^{n}$ functions allows us to generalize their applicability.
+
+Edges under iteration
+
+Idempotents (connected components)
+
+Histogram of index,period.
+
+Reluctant functions. \cite{mullin1970} 
+
+Leaves
+
+Group-likes
+
+\subsection{Min Dom Set}
+Using the Microsoft Z3 SMT solver we compute minimum dominating sets of the monogenic inclusion graph.
+
+
+
+
 
 \section{Permutation function spaces, $S_{n}$}
+
+
 
 \begin{code}
 perm :: a -> a
@@ -234,24 +257,22 @@ Idempotents (connected components)
 
 Histogram of index,period.
 
-Forgetfull functions: By definition permutation function sets have no forgetfull functions.
+Reluctant functions: By definition permutation function sets have no reluctant functions.
 
 Leaves
 
 Group-likes
-\section{Transformation function spaces, $T_{n}$}
 
-Edges under iteration
+\subsection{Min Dom Set}
+The size of a min dominating set for the monogenic inclusion graph of $S_{n}$ is \href{https://oeis.org/A186202}{OEIS A186202}. 
 
-Idempotents (connected components)
+$$\sum_{p}^{n} \sum_{i=1}^{\lfloor {n\over p}\rfloor} {n! \over (n-ip)!i!p^{i}(p-1)   }$$
 
-Histogram of index,period.
 
-Reluctant functions. \cite{mullin1970} 
+The sequence starting at $n=0$ is: 0, 1, 4, 13, 41, 151, 652, 2675, 10579, 59071, 711536, 6180307, 76629775, 873676259, 7496233396, 49493077951.
 
-Leaves
+Publication of this result was declined by TCS \cite{babai2008}, with the irony that it would be come an optimal subroutine seven years later in \cite{babai2015} to replace the ``brute force enumeration" of the symmetric group.
 
-Group-likes
 
 
 
