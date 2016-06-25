@@ -222,17 +222,20 @@ F{\"u}rer's method \cite{furer2007} approaches a conjectured lower bound of $O(n
 \section{Transformation function spaces, $T_{n}$}
 The as an analogue to Cayley's Theorem, all sets of endofunctions form as subsemigroup of the full transformation semigroup $T_{n}$. Demonstration of our techniques in detail on the entire set of $n^{n}$ functions allows us to generalize their applicability.
 
-Edges under iteration
+\subsection{Edges under iteration}
+We denote an edge if $f^i(x) = g(x)$.
 
-Idempotents (connected components)
+\inputminted{text}{tnEdges.seq}
 
-Histogram of index,period.
+\subsection{Idempotents (connected components)}
+\inputminted{text}{tnIdempotents.seq}
+\subsection{Histogram of index,period.}
 
-Reluctant functions. \cite{mullin1970} 
+\subsection{Reluctant functions} \cite{mullin1970} 
 
-Leaves
-
-Group-likes
+\subsection{Leaves}
+\inputminted{text}{tnLeaves.seq}
+\subsection{Group-likes}
 
 \subsection{Min Dom Set}
 Using the Microsoft Z3 SMT solver we compute minimum dominating sets of the monogenic inclusion graph.
@@ -279,6 +282,9 @@ Publication of this result was declined by TCS \cite{babai2008}, with the irony 
 \section{Multiplication in $Z_{n}$ }
 
 Edges under iteration
+
+Edges in monogenic inclusion graph of $Z_n^{*}$:
+\inputminted{text}{monoZnEdges.seq}
 
 Idempotents (connected components)
 

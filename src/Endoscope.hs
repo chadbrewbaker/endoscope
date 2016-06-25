@@ -638,6 +638,7 @@ endoMain = do
 
           putStrLn "Edges in monogenic inclusion graph of multiply on Zn, new sequence"
           print $ map (length . endoThing) [1..50]
+          writeFile  "monoZnEdges.seq" $ show $ map (length . endoThing) [1..20]
           putStrLn "Idempotents in Zn under multiply, OEIS A034444"
           print $ map (length . idempThing) [1..50]
           putStrLn "Leaves of Zn under multiply, new sequence"
@@ -646,10 +647,14 @@ endoMain = do
 
           putStrLn "Edges in Tn, new sequence"
           print $ map (length . endoTransThing) [1..6]
+          writeFile  "tnEdges.seq" $ show $ map (length . endoTransThing) [1..6]
           putStrLn "Idempotents in Tn, OEIS A000248"
           print $ map (length . idempTransThing) [1..6]
+          writeFile  "tnIdempotents.seq" $ show $ map (length . idempTransThing) [1..6]
           putStrLn "Leaves of Tn, new seqence"
           print $ map (length.transLeaves) [1..5] -- [1,3,15,138,1720,27180]
+          writeFile  "tnLeaves.seq" $ show $ map (length.transLeaves) [1..5]
+
           print $ map transLeaves [1..3]
           print $ trans [0..(1-1)]
           print $ trans [0..(2-1)]
