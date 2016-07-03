@@ -37,6 +37,7 @@
 \begin{abstract}
 We examine sets of functions $f(a)\rightarrow a$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm\cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
 \end{abstract}
+\listoffigures
 
 \section{Introduction}
 
@@ -298,6 +299,58 @@ Edges under iteration
 Edges in monogenic inclusion graph of $Z_n^{*}$:
 \inputminted{text}{monoZnEdges.seq}
 
+\begin{figure}[h]
+\centering
+\caption{$Z_{6}^{*}$ Mono Transition Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z6MT.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{7}^{*}$ Mono Transition Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z7MT.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{6}^{*}$ Mono Detection Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z6MD.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{7}^{*}$ Mono Detection Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z7MD.png}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{6}^{*}$ Min Dom Set on Mono Detection Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z6MD_min_dom.png}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{7}^{*}$ Min Dom Set on Mono Detection Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z7MD_min_dom.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{6}^{*}$ Mono Reachability Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z6MR.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{7}^{*}$ Mono Reachability Graph}
+\includegraphics[width=0.5\textwidth]{src/znMultData/z7MR.png}
+\end{figure}
+
+%\includegraphics[height=5cm]{znMultData/z7MT.png}
+\newpage
 Idempotents (connected components)
 
 Histogram of index,period.
@@ -307,7 +360,6 @@ Reluctant functions
 Leaves
 
 Group-likes
-
 
 What does this tell us about integer factorization?
 
