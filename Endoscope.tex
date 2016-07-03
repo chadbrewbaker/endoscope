@@ -231,14 +231,26 @@ We denote an edge if $f^i(x) = g(x)$.
 \inputminted{text}{tnIdempotents.seq}
 \subsection{Histogram of index,period.}
 
-\subsection{Reluctant functions} \cite{mullin1970} 
+\subsection{Reluctant functions} Functions which are not permutaions were called ``reluctant" \cite{mullin1970}. Under self composition they form tree like structures blowing away states in their co-domain until they reach a permutation like state with no further loss of co-domain elements. 
 
 \subsection{Leaves}
 \inputminted{text}{tnLeaves.seq}
 \subsection{Group-likes}
 
+
+% f^i =  f,g,h,f  -> [(f,g), (g,h), (h,f)]
+\subsection{Monogenic Transition Graph}
+This is the graph of individual edges induced by the set of functions under iteration.
+
+\subsection{Monogenic Reachability Graph}
+This is the Monogenic Transition Graph where edges under transitive closure are also added. i.e. if $f^{i}=g$ then we place an edge $f \rightarrow g$.
+
+\subsection{Monogenic Detection Graph}
+This is the dual of the Monogenic Reachabiliy graph. Edges are reversed in direction, and loops are added to. We call this the "detection" graph because if $f^{i}=g$ then it can be said that the existence of the function $g$ must hold when $f$ exists, so $g$ can be used as a proxy to test the non-existance of $f$.
+
+
 \subsection{Min Dom Set}
-Using the Microsoft Z3 SMT solver we compute minimum dominating sets of the monogenic inclusion graph.
+Using the Microsoft Z3 SMT solver we compute minimum dominating sets of our three graphs.
 
 
 
