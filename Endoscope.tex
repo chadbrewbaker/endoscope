@@ -15,7 +15,7 @@
 \usepackage{hyperref}
 \usepackage{amsthm}
 \usepackage{graphicx}
-\graphicspath{ {img/} }
+\graphicspath{ {img/} {znMultData/}}
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{defn}[thm]{Definition}
@@ -290,8 +290,6 @@ The sequence starting at $n=0$ is: 0, 1, 4, 13, 41, 151, 652, 2675, 10579, 59071
 Publication of this result was declined by TCS \cite{babai2008}, with the irony that it would be come an optimal subroutine seven years later in \cite{babai2015} to replace the ``brute force enumeration" of the symmetric group.
 
 
-
-
 \section{Multiplication in $Z_{n}$ }
 
 Edges under iteration
@@ -302,51 +300,77 @@ Edges in monogenic inclusion graph of $Z_n^{*}$:
 \begin{figure}[h]
 \centering
 \caption{$Z_{6}^{*}$ Mono Transition Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z6MT.png}
+\includegraphics[width=0.5\textwidth]{z6MT.png}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{7}^{*}$ Mono Transition Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z7MT.png}
+\includegraphics[width=0.5\textwidth]{z7MT.png}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{6}^{*}$ Min Dom Set on Mono Transition Graph}
+\includegraphics[width=0.5\textwidth]{z6MT_min_dom.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{7}^{*}$ Min Dom Set on Mono Transition Graph}
+\includegraphics[width=0.5\textwidth]{z7MT_min_dom.png}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{6}^{*}$ Mono Detection Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z6MD.png}
+\includegraphics[width=0.5\textwidth]{z6MD.png}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{7}^{*}$ Mono Detection Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z7MD.png}
+\includegraphics[width=0.5\textwidth]{z7MD.png}
 \end{figure}
 
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{6}^{*}$ Min Dom Set on Mono Detection Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z6MD_min_dom.png}
+\includegraphics[width=0.5\textwidth]{z6MD_min_dom.png}
 \end{figure}
 
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{7}^{*}$ Min Dom Set on Mono Detection Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z7MD_min_dom.png}
+\includegraphics[width=0.5\textwidth]{z7MD_min_dom.png}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{6}^{*}$ Mono Reachability Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z6MR.png}
+\includegraphics[width=0.5\textwidth]{z6MR.png}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \caption{$Z_{7}^{*}$ Mono Reachability Graph}
-\includegraphics[width=0.5\textwidth]{src/znMultData/z7MR.png}
+\includegraphics[width=0.5\textwidth]{z7MR.png}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{6}^{*}$ Min Dom Set on Mono Reachability Graph}
+\includegraphics[width=0.5\textwidth]{z6MR_min_dom.png}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\caption{$Z_{7}^{*}$ Min Dom Set on Mono Reachability Graph}
+\includegraphics[width=0.5\textwidth]{z7MR_min_dom.png}
 \end{figure}
 
 %\includegraphics[height=5cm]{znMultData/z7MT.png}

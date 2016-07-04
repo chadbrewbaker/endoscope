@@ -362,9 +362,9 @@ addX m x y = mod (x+y) m
 -- https://gist.github.com/chadbrewbaker/8445183
 factorial 0 = 1
 factorial 1 = 1
-factorial n = n * (factorial (n-1))
+factorial n = n * factorial (n-1)
 
-binomial n k = div (factorial n) ( (factorial k) * (factorial (n-k)) )
+binomial n k = div (factorial n) ( factorial k * factorial (n-k) )
 
 aksBinomial n k = mod (binomial n k) n
 --https://rosettacode.org/wiki/AKS_test_for_primes#Haskell
@@ -539,7 +539,9 @@ genZnMultGraphs n = do
                      appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(n-1)] (mulX n)
                      appendFile fname gvizpost
                      Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ show n ++ "MR.png"
-
+                     let f = "znMultData/z" ++ show n ++ "MR"
+                     jabber <- Process.readProcess "python" ["src/min_dom_z3.py",fname, f] ""
+                     print jabber
 
                      let dname = "znMultData/z" ++ show n ++ "MonoDetectionGraph.gv"
                      writeFile  dname $ gvizpre "MonoDetectionGraph"
@@ -547,7 +549,6 @@ genZnMultGraphs n = do
                      appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
                      appendFile dname gvizpost
                      Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
-
                      let s = "znMultData/z" ++ show n ++ "MD"
                      jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
                      print jabber
@@ -558,6 +559,9 @@ genZnMultGraphs n = do
                      appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph [0..(n-1)] (mulX n)
                      appendFile qname gvizpost
                      Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
+                     let q = "znMultData/z" ++ show n ++ "MT"
+                     jabber <- Process.readProcess "python" ["src/min_dom_z3.py",qname, q] ""
+                     print jabber
 
 
 --Get (gengraphs n mult elts) working
@@ -675,7 +679,7 @@ endoMain = do
           print $ map (length . idempAddThing) [1..50]
           putStrLn "Leaves of add on Zn, ???"
           print $ map (length . idempAddThing) [1..50]
-          writeFile  "transpoly.seq" $ show (map a058067 $ [0..5])
+          writeFile  "transpoly.seq" $ show (map a058067  [0..5])
           --print "Edges in monogenic inclusion graph of Powerset under union"
           --print $ map length $ map endoSetThing [1..5]
           --print "Edges in monogenic inclusion graph of Powerset under intersection"
