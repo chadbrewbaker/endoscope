@@ -301,10 +301,21 @@ getGraph elts mult = theGraph
          theGraph = Graph.buildG (0, length thing - 1 ) forGraph
 
 
+getMonoReachabilityGraph :: Ord a => [a] -> (a -> a -> a) -> Graph
 getMonoReachabilityGraph elts mult = g
   where
-        g = Graph.buildG (0, length elts - 1 ) $ Set.toList $ endoscope elts mult
+        -- First build a hashtable of (a, index) pairs so we can get a cannonical
+        -- index of each element of elts
+        thingIds = zip elts [0..(length elts)]
+        thingToIDMap = Map.fromList thingIds
+        -- need [(a,a)] -> [(Int,Int)]
+        gEdges = Set.toList $ endoscope elts mult
+        mapPair (a,b) = ( (Map.!) thingToIDMap a, (Map.!) thingToIDMap b )
+      --  foo (a, b) = (thingToIDMap a, thingToIDMap b)
+        gEdgesAsInts = map mapPair gEdges
+        g = Graph.buildG (0, length elts - 1 )  gEdgesAsInts
 
+getMonoDetectionGraph :: Ord a =>  [a] -> (a -> a -> a) -> Graph
 getMonoDetectionGraph elts mult = Graph.buildG (0, length elts - 1 ) $ addLoops (length elts) $ Graph.edges $ Graph.transposeG $ getMonoReachabilityGraph elts mult
 
 
@@ -531,6 +542,20 @@ genGraphs n mult elts = do
                            appendFile qname gvizpost
                            Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
 
+
+--Side effects
+-- MR, MD, MT graphs
+-- All of their stats
+-- [(GraphData, GraphData, GraphData)]
+-- ([Edges], [Edges], [Edges])
+-- ([MinDomSize], [MinDomSize], [MinDomSize])
+-- ([ConnectedComponents], [ConnectedComponents], [ConnectedComponents])
+-- ([Girth], [Girth], [Girth])
+-- ([MinColor], [MinColor], [MinColor]) ???
+
+--labelznmult :: (Vertex,Vertex) -> (String, String)
+--labelznmult (i,j) = (show i, show (i+777))
+
 genZnMultGraphs n = do
                      Process.system "mkdir -p znMultData"
                      let fname = "znMultData/z" ++ show n ++ "MonoReachabilityGraph.gv"
@@ -541,7 +566,8 @@ genZnMultGraphs n = do
                      Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ show n ++ "MR.png"
                      let f = "znMultData/z" ++ show n ++ "MR"
                      jabber <- Process.readProcess "python" ["src/min_dom_z3.py",fname, f] ""
-                     print jabber
+                     appendFile ("znMultData/zMR.seq") jabber
+                     --print jabber
 
                      let dname = "znMultData/z" ++ show n ++ "MonoDetectionGraph.gv"
                      writeFile  dname $ gvizpre "MonoDetectionGraph"
@@ -562,6 +588,22 @@ genZnMultGraphs n = do
                      let q = "znMultData/z" ++ show n ++ "MT"
                      jabber <- Process.readProcess "python" ["src/min_dom_z3.py",qname, q] ""
                      print jabber
+--directory = BMMData
+
+baz n = getNodeLabels $ zipIndex $ matsZ2 n
+genBMMGraphs  n = do
+                   let dname = "BMMData/" ++ show n ++ "MonoDetectionGraph.gv"
+                   writeFile  dname $ gvizpre "MonoDetectionGraph"
+                --  print $show $getNodeLabels $ zipIndex $ matsZ2 n
+                   appendFile dname $ baz n
+                   --Pass in a hashtable alias for the mult function?
+                   appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZ2 n) mmult
+                   appendFile dname gvizpost
+                   Process.system $ "dot -Tpng " ++ dname ++ "  > BMMData/" ++ show n ++ "MD.png"
+                   let s = "BMMData/" ++ show n ++ "MD"
+                   jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
+                   print jabber
+                   print "gen bmm graphs"
 
 
 --Get (gengraphs n mult elts) working
@@ -575,8 +617,8 @@ endoMain = do
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
           forM_ [1..11] $ \n -> genZnMultGraphs  n
 
-          Process.system "mkdir -p bmmData"
-          writeFile "bmmData/bork.cork" "baz bar"
+          Process.system "mkdir -p BMMData"
+          --writeFile "bmmData/bork.cork" "baz bar"
 
           Process.system "mkdir -p znMultData"
 
@@ -631,6 +673,9 @@ endoMain = do
           putStrLn "Leaves in BMM, ??"
           print $ map (length . leavesMM) [1..3]
           putStrLn ""
+
+          forM_ [1..3] $ \n -> genBMMGraphs  n
+
 
           putStrLn "Edges in monogenic inclusion graph of co-MatMul on Z2, new sequence"
           print $ map (length . endoMAddThing) [1..3]
