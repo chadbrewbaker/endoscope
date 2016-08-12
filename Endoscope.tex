@@ -3,7 +3,7 @@
 \title{Exploring Endofunctions via Composition}
 %\author{
 %        Chad Brewbaker \\
-%        DataCulture LLC\\
+%        Flying Dog Solutions\\
 %        Clive, Iowa 50325, \underline{U.S.A}
 %}
 \date{\today}
@@ -35,13 +35,13 @@
 \maketitle
 
 \begin{abstract}
-We examine sets of functions $f(a)\rightarrow a$ on a finite set by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm\cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
+We examine sets of functions $f(a)\rightarrow a$ on finite sets by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm\cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
 \end{abstract}
 \listoffigures
 
 \section{Introduction}
 
-In this paper we study sets of functions $f$ from a finite set $a$ back into $a$, $f(a) \rightarrow a$. In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
+In this paper we study sets of functions $f$ from the finite set $a$ back into $a$, $f(a) \rightarrow a$. In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
 \begin{code}
 f :: a -> a 
 \end{code}
@@ -51,7 +51,7 @@ f :: a -> a
 The number of functions from a size $y$ set to a size $x$ set is $x^{y}$. In Haskell notation we write the type signature of such a mapping as
 
 \begin{code}
-f :: x -> y 
+f :: y -> x 
 \end{code}
 
 This duality between exponentials and functions gives a translation between algebraic and functional viewpoints.
@@ -67,7 +67,7 @@ Translated from exponential notation into functional notation we have:
 curry :: n -> m -> a
 curry' :: (n,m) -> a
 \end{code}
-We name these functions ``curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, and a function that passes a tuple of values.
+We name these functions ``curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, a function that passes a tuple of values, and chaining of functions.
 
 For endofuctions with two arguments $f(a,a)\rightarrow a$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
 \begin{code}
@@ -100,7 +100,7 @@ Here are definitions that are used.
 %Given a multiplication tablediscuss how to test for totality O(n^2) make sure every entry is in bounds, asssociativity, identiy O(n) look at identity row/column, divisibility, and communitivy.
 
 \begin{defn}[Endofunction] A function with domain and co-domain of the same type.\end{defn}
-\begin{defn}[Semigroup] A collection of endofunctions closed under composition. Each endofunction may be thought of as a row in it's multiplication table. \end{defn}
+\begin{defn}[Semigroup] A collection of endofunctions closed under composition.  \end{defn}
 \begin{defn}[Full Transformation Semigroup on $n$ elements ] The collection of all endofunctions on an $n$ element set. Denoted $T_{n}.$\end{defn}
 
 \begin{exam} Multiplication table of $T_{2}$ here.\end{exam}
@@ -144,9 +144,9 @@ $Z_6^\times$&0&1&2&3&4&5\\ \hline
 \end{tabular}
 
 \begin{defn}[Factoring] Given an endofunction $f$; return two endofunctions $g,h$, neither an identity function, such that $ f = g(h)$.\end{defn}
-\begin{defn}[Multiplication] Given an endofunctions $g,h$; return an endofuction $f$, such that $ f = g(h)$.\end{defn}
-\begin{defn}[Left factoring] Given an endofunctions $f,h$; return an endofuction $g$, such that $ f = g(h)$.\end{defn}
-\begin{defn}[Right factoring] Given an endofunctions $f,g$; return an endofuction $h$, such that $ f = g(h)$.\end{defn}
+\begin{defn}[Multiplication] Given endofunctions $g,h$; return an endofuction $f$, such that $ f = g(h)$.\end{defn}
+\begin{defn}[Left factoring] Given endofunctions $f,h$; return an endofuction $g$, such that $ f = g(h)$.\end{defn}
+\begin{defn}[Right factoring] Given endofunctions $f,g$; return an endofuction $h$, such that $ f = g(h)$.\end{defn}
 
 
 
@@ -159,13 +159,13 @@ States are Live and Dead. Live cell with less than two Live neighbors dies. Live
 \begin{exam} Examples with permutations and $Z_{1000}^{\times}$\end{exam}
 
 
-Our first tool is "endoscope". It is a function on an ordered set $a$. The arguments are a list of elements in the set $a$, and the endofunction under study. It returns pairs of element in the set and where it ends up after some number of self-compositions.
+Our first tool is \emph{Endoscope}. It is a function on an ordered set $a$. The arguments are a list of elements in the set $a$, and the endofunction under study. It returns pairs of elements in the set under self-compositions. $(f^{0}, f^{i})$
 \begin{code}
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
 \end{code}
 
 
-The function "idempotents" takes a list of elements and an endofunction. It returns the list of elements that are idempotent when passed through the endofunction.
+The function \emph{idempotents} takes a list of elements and an endofunction. It returns the list of elements that are idempotent when passed through the endofunction.
 \begin{code}
 idempotents :: Ord a => [a] -> (a -> a -> a) -> [a]
 idempotents elts mult = filter isSame elts 
