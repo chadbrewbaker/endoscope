@@ -15,7 +15,7 @@
 \usepackage{hyperref}
 \usepackage{amsthm}
 \usepackage{graphicx}
-\graphicspath{ {img/} {znMultData/}}
+\graphicspath{ {img/} {znMultData/} {bmmData/}}
 
 \newtheorem{thm}{Theorem}[section]
 \newtheorem{defn}[thm]{Definition}
@@ -373,6 +373,8 @@ Edges in monogenic inclusion graph of $Z_n^{*}$:
 \includegraphics[width=0.5\textwidth]{z7MR_min_dom.png}
 \end{figure}
 
+
+
 %\includegraphics[height=5cm]{znMultData/z7MT.png}
 \newpage
 Idempotents (connected components)
@@ -434,6 +436,14 @@ Group-likes
 What does this tell us about the complexity of BMM?
 
 
+\begin{figure}[h]
+\centering
+\caption{$BMM_{2}$ Min Dom Set }
+\includegraphics[width=0.5\textwidth]{"bmmData/2MD_min_dom"}
+\end{figure}
+
+
+
 
 \section{Boolean matrix co-multiplication }
 We define boolean matrix-matrix co-multiply (co-BMM) as the function where we have swapped the multiply and addition operators. 
@@ -462,7 +472,7 @@ In \cite{ashlock1990} the concept of a permutation polynomial over $Z_{n}$ was s
 Note that when $n$ is prime then all $n^n$ transformations exist, but when $n$ is a composite such as 4 or 6, then the distinct transformations is exponentially smaller. Here are the values for small $n$ starting at $n=1$.
 \inputminted{text}{transpoly.seq}
 
-Interestingly, this would seem to imply that transformation polynomials form a generalization of the AKS class of primality tests. We can enumerate the polynomials over $Z_{n}$, claiming ``composite" when two polynomials make an equivalent transformation, and ``prime" when we have shown all are unique or all are unique up to some AKS style bound. 
+Interestingly, this would seem to imply that transformation polynomials form a generalization of the AKS\cite{agrawal2004} class of primality tests. We can enumerate the polynomials over $Z_{n}$, claiming ``composite" when two polynomials make an equivalent transformation, and ``prime" when we have shown all are unique or all are unique up to some AKS style bound. 
 
 
 \subsection{Functions in set}
@@ -507,7 +517,7 @@ Geotgheluck showed us how to compute binomial coefficients using prime factoriza
 % Chad 
 %Is Geotgheluck's method any faster than applying Borwein's to $n!, k!, (n-k)! $ then subtracting the denominator exponents?
 
-AKS noted that for prime numbers ${n \choose k}$ always is divisible by  $n$, since no term in the denominator less than $n$ is a factor. ${n! \over k! * (n-k)!}$
+AKS\cite{agrawal2004} noted that for prime numbers ${n \choose k}$ always is divisible by  $n$, since no term in the denominator less than $n$ is a factor. ${n! \over k! * (n-k)!}$
 
 However for composite numbers $n$ , some values of ${n \choose k}$ are not divisible by $n$.
 

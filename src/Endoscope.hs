@@ -247,7 +247,7 @@ invRightMultEdgeList elts mult = map swap $ rightMultEdgeList elts mult
 
 chunkRows :: Int -> [a] ->[[a]]
 chunkRows n [] = []
-chunkRows n (xs) = take n xs : chunkRows n (drop n xs)
+chunkRows n xs = take n xs : chunkRows n (drop n xs)
 
 -- endoscope :: generator -> endoFunc -> Set (a,a)
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
@@ -566,7 +566,7 @@ genZnMultGraphs n = do
                      Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ show n ++ "MR.png"
                      let f = "znMultData/z" ++ show n ++ "MR"
                      jabber <- Process.readProcess "python" ["src/min_dom_z3.py",fname, f] ""
-                     appendFile ("znMultData/zMR.seq") jabber
+                     appendFile "znMultData/zMR.seq" jabber
                      --print jabber
 
                      let dname = "znMultData/z" ++ show n ++ "MonoDetectionGraph.gv"
@@ -665,7 +665,7 @@ endoMain = do
           print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
           putStrLn ""
 
-
+         --BMM SECTION---
           putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
           print $ map (length . endoMMThing) [1..3]
           putStrLn "Idempotents in BMM, OEIS A086907 and OEIS A132186"
