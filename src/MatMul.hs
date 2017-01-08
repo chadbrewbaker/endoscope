@@ -14,6 +14,8 @@ toZn n a = mod a n
 mmult a b = [ [ toZ2 $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 mmult_close a b = [ [ toZ2_close $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 mmultn a b n = [ [ toZn n $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
+mmultnc n a b = mmultn a b n
+
 
 madd a b = [ [ toZ2 $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
 madd_close a b = [ [ toZ2_close $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
@@ -25,10 +27,10 @@ pListz2 x = replicateM x [0,1]
 matsZ2 :: Int -> [[[Integer]]]
 matsZ2 n =  replicateM n $ pListz2 n
 
-pListz :: Int -> Int -> [[Integer]]
+-- pListz :: Int -> Int -> [[Integer]]
 pListz n x = replicateM n $ take x [0..] 
 
-matsZn :: Int -> Int -> [[[Integer]]]
+-- matsZn :: Int -> Int -> [[[Integer]]]
 matsZn n k =  replicateM n $ pListz n k
 
 

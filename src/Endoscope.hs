@@ -599,11 +599,43 @@ genBMMGraphs  n = do
                    --Pass in a hashtable alias for the mult function?
                    appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZ2 n) mmult
                    appendFile dname gvizpost
-                   Process.system $ "dot -Tpng " ++ dname ++ "  > BMMData/" ++ show n ++ "MD.png"
+                   Process.system $ "neato -Tpdf " ++ dname ++ "  > BMMData/" ++ show n ++ "MD.pdf"
                    let s = "BMMData/" ++ show n ++ "MD"
                    jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
                    print jabber
-                   print "gen bmm graphs"
+                   -- print "gen bmm graphs"
+
+
+-- baz n = getNodeLabels $ zipIndex $ matsZ2 n
+genBCloseGraphs  n = do
+                   let dname = "BCloseData/" ++ show n ++ "MonoDetectionGraph.gv"
+                   writeFile  dname $ gvizpre "MonoDetectionGraph"
+                --  print $show $getNodeLabels $ zipIndex $ matsZ2 n
+                   appendFile dname $ baz n
+                   --Pass in a hashtable alias for the mult function?
+                   appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZ2 n) mmult_close
+                   appendFile dname gvizpost
+                   Process.system $ "neato -Tpdf " ++ dname ++ "  > BCloseData/" ++ show n ++ "MD.pdf"
+                   let s = "BCloseData/" ++ show n ++ "MD"
+                   jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
+                   print jabber
+                   -- print "gen bclose graphs"                   
+
+
+bazn n k = getNodeLabels $ zipIndex $ matsZn n k
+genBMMGraphsn  n  k = do
+                   let dname = "BMMData/" ++ show n ++ "_" ++ show k ++ "MonoDetectionGraph.gv"
+                   writeFile  dname $ gvizpre "MonoDetectionGraph"
+                --  print $show $getNodeLabels $ zipIndex $ matsZ2 n
+                   appendFile dname $ (bazn n k)
+                   --Pass in a hashtable alias for the mult function?
+                   appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZn n k) $ mmultnc (toInteger k)
+                   appendFile dname gvizpost
+                   Process.system $ "neato -Tpdf " ++ dname ++ "  > BMMData/" ++ show n ++ "_" ++ show k ++ "MD.pdf"
+                   let s = "BMMData/" ++ show n ++ "_" ++ show k ++ "MD"
+                   jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
+                   putStrLn jabber
+                   -- print "gen bmmn graphs"
 
 
 --Get (gengraphs n mult elts) working
@@ -621,6 +653,7 @@ endoMain = do
           --writeFile "bmmData/bork.cork" "baz bar"
 
           Process.system "mkdir -p znMultData"
+          Process.system "mkdir -p BCloseData"
 
           let fname = "znMultData/z12MonoReachabilityGraph.gv"
           writeFile  fname $ gvizpre "MonoReachabilityGraph"
@@ -674,7 +707,39 @@ endoMain = do
           print $ map (length . leavesMM) [1..3]
           putStrLn ""
 
-          forM_ [1..3] $ \n -> genBMMGraphs  n
+          --forM_ [1..3] $ \n -> genBMMGraphs  n
+          putStrLn "Min Dom BMMn 1 *; https://oeis.org/A034444"
+          genBMMGraphsn  1  1
+          genBMMGraphsn  1  2
+          genBMMGraphsn  1  3
+          genBMMGraphsn  1  4
+          genBMMGraphsn  1  5
+          genBMMGraphsn  1  6
+          genBMMGraphsn  1  7
+          genBMMGraphsn  1  8
+          genBMMGraphsn  1  9
+          genBMMGraphsn  1  10
+          genBMMGraphsn  1  11
+          genBMMGraphsn  1  12
+          genBMMGraphsn  1  13
+          genBMMGraphsn  1  14
+          genBMMGraphsn  1  15
+          putStrLn "Min Dom BMMn 2 *; https://oeis.org/A226756"
+          genBMMGraphsn  2  1 
+          genBMMGraphsn  2  2 
+          genBMMGraphsn  2  3 
+          genBMMGraphsn  2  4
+          genBMMGraphsn  2  5
+          genBMMGraphsn  2  6
+          putStrLn "Min Dom BMMn 3 *"
+          genBMMGraphsn  3  1
+          genBMMGraphsn  3  2 
+          -- genBMMGraphsn  4  2 "802" (1258.67 secs, 6,541,096,536 bytes)
+          
+          putStrLn "Min Dom BClose" 
+          genBCloseGraphs 2
+          genBCloseGraphs 3
+          -- genBCloseGraphs 4  "2360" (403.40 secs, 4,036,249,704 bytes)
 
 
           putStrLn "Edges in monogenic inclusion graph of co-MatMul on Z2, new sequence"

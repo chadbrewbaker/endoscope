@@ -72,9 +72,13 @@ def main(argc, argv):
 	if s[node] != 0:
 		dom_size = dom_size +1
 
-    G.layout('dot')
-    G.draw('./%s_min_dom.png' % outName)
-    print dom_size
+    #G.layout('dot')
+    
+    if len(G.nodes()) <1000:
+        G.draw('./%s_min_dom_dot.pdf' % outName, format='pdf', prog='dot')
+    G.draw('./%s_min_dom_neato.pdf' % outName, format='pdf', prog='neato',args='-Gmaxiter=5')
+    os.system('echo "%s" > %s' % (G.string(), "%s_min_dom.gv" % outName ))
+    os.sys.stdout.write(str(dom_size))
     return 0
 
 if __name__ == '__main__':
