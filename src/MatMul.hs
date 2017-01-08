@@ -26,7 +26,7 @@ matsZ2 :: Int -> [[[Integer]]]
 matsZ2 n =  replicateM n $ pListz2 n
 
 pListz :: Int -> Int -> [[Integer]]
-pListz n x = replicateM x $ take n [0..] 
+pListz n x = replicateM n $ take x [0..] 
 
 matsZn :: Int -> Int -> [[[Integer]]]
 matsZn n k =  replicateM n $ pListz n k
