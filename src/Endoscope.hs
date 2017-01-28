@@ -20,6 +20,7 @@ import MatMul
 import Control.Monad
 import qualified System.Process as Process
 import Data.List
+import Unsafe.Coerce
 --import System.Environment
 -- getargs gets the command line args if we need them
 
@@ -54,6 +55,17 @@ forbTransSet n = Set.difference (fullSet n) (polySet n)
 a058067 n = Set.size $ Set.fromList $ map snd  $ polyTransPairs [0..n]
 
 perm x =  List.permutations [0..x-1]
+
+
+
+hash thing = Map.fromList $ zip thing [0..(length thing)]
+rhash thing = Map.fromList $ zip [0..(length thing)] thing 
+
+
+
+
+
+--snippet
 
 barehline = "\\hline\n"
 hline = "\\\\ \\hline\n"
@@ -225,24 +237,24 @@ cartProd elts mult = map multOnPair $ Control.Monad.liftM2 (,) elts elts --mappe
       multOnPair (x,y) = mult x y
 
 
-mTable :: [a] -> (a -> a -> a) -> [[a]]
-mTable  elts mult =  chunkRows (length elts)  [ mult x y | x <- elts , y <- elts ]
+-- mTable :: [a] -> (a -> a -> a) -> [[a]]
+-- mTable  elts mult =  chunkRows (length elts)  [ mult x y | x <- elts , y <- elts ]
 
-rightmTable elts mult = List.transpose $ mTable elts mult
+-- rightmTable elts mult = List.transpose $ mTable elts mult
 
-mTrips :: [a] -> (a -> a -> a) -> [(a,a,a)]
-mTrips elts mult =  [ (mult x y, x, y) | x <- elts , y <- elts ]
+--mTrips :: [a] -> (a -> a -> a) -> [(a,a,a)]
+--mTrips elts mult =  [ (mult x y, x, y) | x <- elts , y <- elts ]
 
 filterLeft (a,b,_) = (a,b)
 filterRight (a,_,c) = (a,c)
 
 swap (a,b) = (b,a)
 
-leftMultEdgeList elts mult = map filterLeft $ mTrips elts mult
-invLeftMultEdgeList elts mult = map swap $ leftMultEdgeList elts mult
+-- leftMultEdgeList elts mult = map filterLeft $ mTrips elts mult
+-- invLeftMultEdgeList elts mult = map swap $ leftMultEdgeList elts mult
 
-rightMultEdgeList elts mult = map filterRight $ mTrips elts mult
-invRightMultEdgeList elts mult = map swap $ rightMultEdgeList elts mult
+-- rightMultEdgeList elts mult = map filterRight $ mTrips elts mult
+-- invRightMultEdgeList elts mult = map swap $ rightMultEdgeList elts mult
 
 
 chunkRows :: Int -> [a] ->[[a]]
@@ -315,6 +327,7 @@ getMonoReachabilityGraph elts mult = g
         gEdgesAsInts = map mapPair gEdges
         g = Graph.buildG (0, length elts - 1 )  gEdgesAsInts
 
+
 getMonoDetectionGraph :: Ord a =>  [a] -> (a -> a -> a) -> Graph
 getMonoDetectionGraph elts mult = Graph.buildG (0, length elts - 1 ) $ addLoops (length elts) $ Graph.edges $ Graph.transposeG $ getMonoReachabilityGraph elts mult
 
@@ -327,16 +340,31 @@ getLoop y = (y,y)
 getLoops n = map getLoop [0..(n-1)]
 
 
+
+getGraphWithEdgesFunc elts mults getEdgesFunc = g
+   where 
+        thingIds = zip elts [0..(length elts)]
+        thingToIDMap = Map.fromList thingIds
+        gEdges = getEdgesFunc elts mults
+        mapPair (a,b) = ( (Map.!) thingToIDMap a, (Map.!) thingToIDMap b )
+        gEdgesAsInts = map mapPair gEdges
+        g = Graph.buildG (0, length elts - 1 ) gEdgesAsInts
+
+
+
 -- f^i =  f,g,h,f  -> [(f,g), (g,h), (h,f)]
-getMonoTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $ getMonoEdges elts mults
+
+getMonoTransitionGraph elts mults = getGraphWithEdgesFunc elts mults getMonoEdges
+  
 
 -- f = (g,h) use (f,g) as edge
-getLeftTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $  getLeftMultEdges elts mults
+getLeftTransitionGraph elts mults =   getGraphWithEdgesFunc elts mults getLeftMultEdges
 
 
 
 -- f = (g,h) use (f,h) as edge
-getRightTransitionGraph elts mults =  Graph.buildG (0, length elts - 1 ) $ List.nub $  getRightMultEdges elts mults
+getRightTransitionGraph elts mults =  getGraphWithEdgesFunc elts mults  getRightMultEdges 
+
 
 
 --getTransitionTree = undefined
@@ -514,33 +542,44 @@ groupLengths = map getLen
          getLen a = (length a, head a)
 
 
-genGraphs n mult elts = do
-                           Process.system "mkdir -p znMultData"
-                           let fname = "znMultData/z" ++ show n ++ "MonoReachabilityGraph.gv"
+-- Also pass directory
+-- genGraphs :: String -> Mult -> [Elt] ->() IO
+genGraphs desc mult elts = do
+                           let eltToInt = hash elts
+                           let intToElt = rhash elts
+                           
+                           Process.system "mkdir -p kitchensink"
+                           let fname = "kitchensink/" ++ desc ++ "MonoReachabilityGraph.gv"
                            writeFile  fname $ gvizpre "MonoReachabilityGraph"
-                           appendFile fname $ getNodeLabels $ zipIndex [0..(n-1)]
-                           appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph [0..(n-1)] (mulX n)
+                           appendFile fname $ getNodeLabels $ zipIndex elts
+                           appendFile fname $ edgesToDot $ edges $ getMonoReachabilityGraph elts mult
                            appendFile fname gvizpost
-                           Process.system $ "dot -Tpng " ++ fname ++ "  > znMultData/z" ++ show n ++ "MR.png"
+                           -- Process.system $ "dot -Tpng " ++ fname ++ "  > kitchensink/" ++ desc ++ "MR.png"
+                           let s1 = "kitchensink/" ++ desc ++ "MR"
+                           jabber1 <- Process.readProcess "python" ["src/min_dom_z3.py",fname, s1] ""
 
 
-                           let dname = "znMultData/z" ++ show n ++ "MonoDetectionGraph.gv"
+                           let dname = "kitchensink/" ++ desc ++ "MonoDetectionGraph.gv"
                            writeFile  dname $ gvizpre "MonoDetectionGraph"
-                           appendFile dname $ getNodeLabels $ zipIndex [0..(n-1)]
-                           appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph [0..(n-1)] (mulX n)
+                           appendFile dname $ getNodeLabels $ zipIndex elts
+                           appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph elts mult
                            appendFile dname gvizpost
-                           Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ show n ++ "MD.png"
+                           -- Process.system $ "dot -Tpng " ++ dname ++ "  > znMultData/z" ++ desc ++ "MD.png"
 
-                           let s = "znMultData/z" ++ show n ++ "MD"
-                           jabber <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s] ""
-                           print jabber
+                           let s2 = "kitchensink/" ++ desc ++ "MD"
+                           jabber2 <- Process.readProcess "python" ["src/min_dom_z3.py",dname, s2] ""
+                           
 
-                           let qname = "znMultData/z" ++ show n ++ "MonoTransitionGraph.gv"
+                           let qname = "kitchensink/" ++ desc ++ "MonoTransitionGraph.gv"
                            writeFile  qname $ gvizpre "MonoTransitionGraph"
-                           appendFile qname $ getNodeLabels $ zipIndex [0..(n-1)]
-                           appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph [0..(n-1)] (mulX n)
+                           appendFile qname $ getNodeLabels $ zipIndex elts
+                           appendFile qname $ edgesToDot $ edges $ getMonoTransitionGraph elts mult
                            appendFile qname gvizpost
-                           Process.system $ "dot -Tpng " ++ qname ++ "  > znMultData/z" ++ show n ++ "MT.png"
+                           -- Process.system $ "dot -Tpng " ++ qname ++ "  > kitchensink/" ++ desc ++ "MT.png"
+                           let s3 = "kitchensink/" ++ desc ++ "MT"
+                           jabber3 <- Process.readProcess "python" ["src/min_dom_z3.py",qname, s3] ""
+                           print $ jabber1 ++ "," ++ jabber2 ++ "," ++  "," ++ jabber3
+                           print "done"
 
 
 --Side effects
@@ -642,6 +681,8 @@ genBMMGraphsn  n  k = do
 --Get gengraphs to dump some data to in memory data structures like the min dom set sizes
 --Make a printgraphinfo that prints the cached graph info for OEIS seqs.
 
+vSomething :: (a -> b -> a) -> (Vertex -> Vertex -> Vertex)
+vSomething z = unsafeCoerce z
 
 endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)
@@ -774,6 +815,12 @@ endoMain = do
           print $ trans [0..(2-1)]
           print $ trans [0..(3-1)]
           putStrLn ""
+          
+          --giterdone a = unsafeCoerce a :: [Vertex]
+          genGraphs "bork"  transMult  (trans [0..(3-1)])
+         -- genGraphs "desc" transMult  (perm 2)
+          --(perm x) transMult
+
 
           putStrLn "Edges in Sn, OEIS A060014"
           print $ map (length . endoPermThing) [1..6]
