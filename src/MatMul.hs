@@ -12,13 +12,13 @@ toZn n a = mod a n
 
 --mmult :: Num a => [[a]] -> [[a]] -> [[a]]
 mmult a b = [ [ toZ2 $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
-mmult_close a b = [ [ toZ2_close $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
+mmultClose a b = [ [ toZ2_close $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 mmultn a b n = [ [ toZn n $ sum $ zipWith (*) ar bc | bc <- transpose b ] | ar <- a ]
 mmultnc n a b = mmultn a b n
 
 
 madd a b = [ [ toZ2 $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
-madd_close a b = [ [ toZ2_close $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
+maddClose a b = [ [ toZ2_close $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
 maddn a b n = [ [ toZn n $ product $ zipWith (+) ar bc | bc <- transpose b ] | ar <- a ]
 
 pListz2 :: Int -> [[Integer]]

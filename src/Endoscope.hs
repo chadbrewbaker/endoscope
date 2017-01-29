@@ -175,11 +175,13 @@ getMonoEdges elts mult = foldr ((++) . boundthing) [] elts
 
 leftMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
 leftMultEdgs [] _ _ = []
+leftMultEdges (x:[]) mult elt = [(elt, mult elt x)]
 leftMultEdges (x:xs) mult elt = (elt, mult elt x) : leftMultEdges xs mult elt
 
 
 rightMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
-rightMultEdgs [] _  _= []
+rightMultEdgs [] _  _ = []
+rightMultEdges (x:[]) mult elt =  [(x, mult elt x)]
 rightMultEdges (x:xs) mult elt =  (x, mult elt x) : rightMultEdges xs mult elt
 
 
@@ -578,8 +580,30 @@ genGraphs desc mult elts = do
                            -- Process.system $ "dot -Tpng " ++ qname ++ "  > kitchensink/" ++ desc ++ "MT.png"
                            let s3 = "kitchensink/" ++ desc ++ "MT"
                            jabber3 <- Process.readProcess "python" ["src/min_dom_z3.py",qname, s3] ""
-                           print $ jabber1 ++ "," ++ jabber2 ++ "," ++  "," ++ jabber3
-                           print "done"
+
+
+                           let q2name = "kitchensink/" ++ desc ++ "LeftTransitionGraph.gv"
+                           writeFile  q2name $ gvizpre "LeftTransitionGraph"
+                           appendFile q2name $ getNodeLabels $ zipIndex elts
+                           appendFile q2name $ edgesToDot $ edges $ getLeftTransitionGraph elts mult
+                           appendFile q2name gvizpost
+                           -- Process.system $ "dot -Tpng " ++ qname ++ "  > kitchensink/" ++ desc ++ "MT.png"
+                           let s4 = "kitchensink/" ++ desc ++ "LEFT_MT"
+                           jabber4 <- Process.readProcess "python" ["src/min_dom_z3.py",q2name, s4] ""
+
+                           let q3name = "kitchensink/" ++ desc ++ "RightTransitionGraph.gv"
+                           writeFile  q3name $ gvizpre "RightTransitionGraph"
+                           appendFile q3name $ getNodeLabels $ zipIndex elts
+                           appendFile q3name $ edgesToDot $ edges $ getRightTransitionGraph elts mult
+                           appendFile q3name gvizpost
+                           -- Process.system $ "dot -Tpng " ++ qname ++ "  > kitchensink/" ++ desc ++ "MT.png"
+                           let s5 = "kitchensink/" ++ desc ++ "LEFT_MT"
+                           jabber5 <- Process.readProcess "python" ["src/min_dom_z3.py",q3name, s5] ""
+                           
+
+                           Process.system $ "echo " ++ desc ++ "," ++ jabber1 ++ "," ++ jabber2 ++ "," ++ jabber3 ++  "," 
+                                ++ jabber4 ++  "," ++ jabber5 ++ " >> "++ "kitchensink/" ++ "min_doms.csv"
+          
 
 
 --Side effects
@@ -652,7 +676,7 @@ genBCloseGraphs  n = do
                 --  print $show $getNodeLabels $ zipIndex $ matsZ2 n
                    appendFile dname $ baz n
                    --Pass in a hashtable alias for the mult function?
-                   appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZ2 n) mmult_close
+                   appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZ2 n) mmultClose
                    appendFile dname gvizpost
                    Process.system $ "neato -Tpdf " ++ dname ++ "  > BCloseData/" ++ show n ++ "MD.pdf"
                    let s = "BCloseData/" ++ show n ++ "MD"
@@ -666,7 +690,7 @@ genBMMGraphsn  n  k = do
                    let dname = "BMMData/" ++ show n ++ "_" ++ show k ++ "MonoDetectionGraph.gv"
                    writeFile  dname $ gvizpre "MonoDetectionGraph"
                 --  print $show $getNodeLabels $ zipIndex $ matsZ2 n
-                   appendFile dname $ (bazn n k)
+                   appendFile dname (bazn n k)
                    --Pass in a hashtable alias for the mult function?
                    appendFile dname $ edgesToDot $ edges $ getMonoDetectionGraph (matsZn n k) $ mmultnc (toInteger k)
                    appendFile dname gvizpost
@@ -681,8 +705,8 @@ genBMMGraphsn  n  k = do
 --Get gengraphs to dump some data to in memory data structures like the min dom set sizes
 --Make a printgraphinfo that prints the cached graph info for OEIS seqs.
 
-vSomething :: (a -> b -> a) -> (Vertex -> Vertex -> Vertex)
-vSomething z = unsafeCoerce z
+-- vSomething :: (a -> b -> a) -> (Vertex -> Vertex -> Vertex)
+-- vSomething z = unsafeCoerce z
 
 endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)
@@ -770,8 +794,8 @@ endoMain = do
           genBMMGraphsn  2  2 
           genBMMGraphsn  2  3 
           genBMMGraphsn  2  4
-          genBMMGraphsn  2  5
-          genBMMGraphsn  2  6
+          --genBMMGraphsn  2  5
+          --genBMMGraphsn  2  6
           putStrLn "Min Dom BMMn 3 *"
           genBMMGraphsn  3  1
           genBMMGraphsn  3  2 
