@@ -186,12 +186,12 @@ rightMultEdges (x:xs) mult elt =  (x, mult elt x) : rightMultEdges xs mult elt
 
 
 getLeftMultEdges :: Ord a => [a] -> (a -> a -> a) -> [(a,a)]
-getLeftMultEdges elts mult = foldr ((++) . boundthing) [] elts
+getLeftMultEdges elts mult = List.nub $ foldr ((++) . boundthing) [] elts
       where
         boundthing = leftMultEdges elts mult
 
 getRightMultEdges :: Ord a => [a] -> (a -> a -> a) -> [(a,a)]
-getRightMultEdges elts mult = foldr ((++) . boundthing) [] elts
+getRightMultEdges elts mult = List.nub $ foldr ((++) . boundthing) [] elts
       where
         boundthing = rightMultEdges elts mult
 
@@ -597,7 +597,7 @@ genGraphs desc mult elts = do
                            appendFile q3name $ edgesToDot $ edges $ getRightTransitionGraph elts mult
                            appendFile q3name gvizpost
                            -- Process.system $ "dot -Tpng " ++ qname ++ "  > kitchensink/" ++ desc ++ "MT.png"
-                           let s5 = "kitchensink/" ++ desc ++ "LEFT_MT"
+                           let s5 = "kitchensink/" ++ desc ++ "Right_MT"
                            jabber5 <- Process.readProcess "python" ["src/min_dom_z3.py",q3name, s5] ""
                            
 
