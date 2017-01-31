@@ -69,7 +69,7 @@ curry' :: (n,m) -> a
 \end{code}
 We name these functions ``curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, a function that passes a tuple of values, and chaining of functions.
 
-For endofuctions with two arguments $f(a,a)\rightarrow a$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in an endofuction with one argument.
+For endofuctions with two arguments $f(a,a)\rightarrow a$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in a function with one argument.
 \begin{code}
 f :: (a,a) -> a
 g :: a -> a -> a
@@ -88,7 +88,20 @@ J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either tr
 \end{figure}
 
 
+Multiplication table function
+\begin{code}
+multTableFunc :: a -> a ->a
+\end{code} 
 
+Binding the first variable on all possible values gives a list of functions:
+\begin{code}
+boundList ::  [(a->a)]
+\end{code}
+
+The enumeration of all triples is the multiplication table:
+\begin{code}
+ multTable :: [(a,a,a)]
+\end{code}
 
 Here are definitions that are used.
 
@@ -251,10 +264,21 @@ This is the dual of the Monogenic Reachabiliy graph. Edges are reversed in direc
 
 
 \subsection{Min Dom Set}
-Using the Microsoft Z3 SMT solver we compute minimum dominating sets of our three graphs.
+Using the Microsoft Z3 SMT solver we compute minimum dominating sets of our monogenic graphs.
 
 
+\subsection{Idempotent mult table}
+What happens if we rewrite a the mutliplication table $ [(a,b,c)]$ with [id(a),id(b),id(c) ]? 
 
+
+\subsection{composition complexity}
+Some functions take larger resources than others to execute. We can use dynamic programming to derive a composition chain that is minimal. For instance in elementary school we learned that multiplying by 10 simply added a zero, which can be less complex than multiplying by other numbers.
+
+\begin{code}
+[(complexity, (a -> a))]
+\end{code}
+
+In the case of matrix matrix multiply, the complexity might be $N$ times the number of nonzero elements in the right hand matrix.
 
 
 \section{Permutation function spaces, $S_{n}$}
@@ -432,6 +456,15 @@ Leaves
 
 Group-likes
 
+\subsection{Min dom set}
+The minimum dominating set for 1x1 matrices over $Z_{n}$ is https://oeis.org/A034444, the number of squarefree divisors.
+The minimum dominating set for 2x2 matrices over $Z_{n}$ is https://oeis.org/A226756.
+
+%Do we even need to shell out to Z3? The min dom set is just the idempotents? Is this a bug because we need to remove the idempotents first?
+
+
+
+
 
 What does this tell us about the complexity of BMM?
 
@@ -441,6 +474,27 @@ What does this tell us about the complexity of BMM?
 \caption{$BMM_{2}$ Min Dom Set }
 \includegraphics[width=0.5\textwidth]{"bmmData/2MD_min_dom"}
 \end{figure}
+
+
+\subsection{Complexity of Strassen style matmul}
+Strassen style matrix multiplications rely on an interleaving of sparse multiplies and additions of matrices over $Z_{k}(n,n)$
+
+
+1) Endofuction of matrix multiply over  $Z_{k}(n,n)$.
+2) Endofuction of matrix add over  $Z_{k}(n,n)$.
+
+Elements now have two outputs upon iteration. What do these graphs look like? What is their min detection set if we ignoring idempotents?
+
+DAG of add or multily. Can use source or a constant
+
+
+
+\subsection{Brent equations}
+$\delta_{i,j}$, the Kronecker delta function, is 0 if $i \neq j$ and 1 if $i =j$.
+
+$\sum_{i=1}^{r} A_{ij}^(i) B_{kl}^{i} C_{mn}^{i} = \delta_{n,i}\delta_{j,k}\delta_{l,m}$
+
+
 
 
 
