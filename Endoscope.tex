@@ -1,11 +1,12 @@
 
 
-\title{Exploring Endofunctions via Composition}
-%\author{
-%        Chad Brewbaker \\
-%        Flying Dog Solutions\\
-%        Clive, Iowa 50325, \underline{U.S.A}
-%}
+\title{Analysis of Small Magmas}
+\author{
+        Chad Brewbaker \\
+        Flying Dog Solutions\\
+        13977 Summit Dr.
+	Clive, Iowa 50325, \underline{U.S.A}
+}
 \date{\today}
 
 \documentclass{article}
@@ -35,18 +36,21 @@
 \maketitle
 
 \begin{abstract}
-We examine sets of functions $f(a)\rightarrow a$ on finite sets by chasing them under self-composition (iteration). Using this technique we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm\cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
+We examine properties of small magmas.  By chasing permutations under self-composition (iteration) we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm \cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
 \end{abstract}
+%Should we do magmas too? Curious what idempotents a magma has, seems they could be completely rando.
+
+
 \listoffigures
+
 
 \section{Introduction}
 
-In this paper we study sets of functions $f$ from the finite set $a$ back into $a$, $f(a) \rightarrow a$. In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
+In this paper we study sets of functions $f(a,a)\rightarrow a$ on the finite set $a$ . In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
 \begin{code}
-f :: a -> a 
+f :: a -> a -> a
 \end{code}
 % Alternatively, \inputminted{Haskell}{Program.hs}
-
 
 The number of functions from a size $y$ set to a size $x$ set is $x^{y}$. In Haskell notation we write the type signature of such a mapping as
 
@@ -54,9 +58,23 @@ The number of functions from a size $y$ set to a size $x$ set is $x^{y}$. In Has
 f :: y -> x 
 \end{code}
 
-This duality between exponentials and functions gives a translation between algebraic and functional viewpoints.
+This analogue between exponentials and functions gives a translation between algebraic and functional viewpoints.
 
-It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms \cite{boyanov2003}.
+%It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms \cite{boyanov2003}.
+
+In this paper we will look at magmas, which have type signature:
+\begin{code}
+magma :: a -> a -> a
+\end{code}
+
+The order of an unconstrained magma is thus $n^{n^{n}}$.
+
+We will also look at semigroups. They have the additional property that:
+\begin{code}
+magma ( magma a, b) c   == magma a, (magma b,c) 
+\end{code}
+
+They have order $n^{n}$. The complete semigroup on $n$ elements is called the full transformation semigroup denoted as $T_{n}$
 
 Recall this algebraic identity we learned in primary school.
 
@@ -267,6 +285,9 @@ This is the dual of the Monogenic Reachabiliy graph. Edges are reversed in direc
 Using the Microsoft Z3 SMT solver we compute minimum dominating sets of our monogenic graphs.
 
 
+
+
+
 \subsection{Idempotent mult table}
 What happens if we rewrite a the mutliplication table $ [(a,b,c)]$ with [id(a),id(b),id(c) ]? 
 
@@ -279,6 +300,22 @@ Some functions take larger resources than others to execute. We can use dynamic 
 \end{code}
 
 In the case of matrix matrix multiply, the complexity might be $N$ times the number of nonzero elements in the right hand matrix.
+
+
+\subsection{Homogenious idempontent products}
+
+Given two elements having the same idempotent under self composition, how can we effectively efficently multiply them?
+
+
+\subsection{Equivalence classes of multiplications by idempotent}
+Let $idemp(a)$ be the function that maps $a$ to it's idempotent under self iteration.
+Let $a\times b = c$, be denoted as $(a,b,c)$. We map $(a,b,c)$ to $(idemp(a), idemp(b), idemp(c)$ to form multiplication equivalence classes over idempotents. 
+
+The number of idempotent equivalent multiplications for the full transformation semigroup $T_{n}$ is: 1, 11, 268, 13705.  (TODO SUBMIT TO OEIS) 
+
+Hopefully we can use these equivalence classes to compress the information/work needed to perform arbitrary multiplications for the endofunction.
+
+For $Z_{n}$ under multiplication the sequence seems to be $4^{prime divisors}$.
 
 
 \section{Permutation function spaces, $S_{n}$}
@@ -429,6 +466,8 @@ Leaves
 
 Group-likes
 
+
+
 \section{Boolean matrix multiplication }
 Boolean ($Z_{2}$) matrix-matrix multiplication (BMM) is a fundamental subroutine. Computations from transitive closure to parsing context free grammars\cite{valiant1975} reduce to BMM.
 
@@ -475,6 +514,7 @@ What does this tell us about the complexity of BMM?
 \includegraphics[width=0.5\textwidth]{"bmmData/2MD_min_dom"}
 \end{figure}
 
+Note: Igro Potapov has some results on ZNMM %, https://scholar.google.com/citations?view_op=view_citation&hl=en&user=zdGjSYAAAAAJ&sortby=pubdate&citation_for_view=zdGjSYAAAAAJ:W5xh706n7nkC
 
 \subsection{Complexity of Strassen style matmul}
 Strassen style matrix multiplications rely on an interleaving of sparse multiplies and additions of matrices over $Z_{k}(n,n)$

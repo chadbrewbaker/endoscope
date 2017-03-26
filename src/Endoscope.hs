@@ -175,13 +175,13 @@ getMonoEdges elts mult = foldr ((++) . boundthing) [] elts
 
 leftMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
 leftMultEdgs [] _ _ = []
-leftMultEdges (x:[]) mult elt = [(elt, mult elt x)]
+leftMultEdges [x] mult elt = [(elt, mult elt x)]
 leftMultEdges (x:xs) mult elt = (elt, mult elt x) : leftMultEdges xs mult elt
 
 
 rightMultEdges :: [a] -> (a -> a -> a) -> a -> [(a,a)]
 rightMultEdgs [] _  _ = []
-rightMultEdges (x:[]) mult elt =  [(x, mult elt x)]
+rightMultEdges [x] mult elt =  [(x, mult elt x)]
 rightMultEdges (x:xs) mult elt =  (x, mult elt x) : rightMultEdges xs mult elt
 
 
@@ -263,7 +263,11 @@ chunkRows :: Int -> [a] ->[[a]]
 chunkRows n [] = []
 chunkRows n xs = take n xs : chunkRows n (drop n xs)
 
--- endoscope :: generator -> endoFunc -> Set (a,a)
+
+
+
+
+-- endoscope :: generators -> endoFunc -> Set (a,a)
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
 endoscope elts mult = foldr (Set.union . mono mult) Set.empty elts
 --endoscope' elts mult = foldr Set.union Set.empty (map (mono' mult) elts )
@@ -412,10 +416,62 @@ aksBinomial n k = mod (binomial n k) n
 
 -- cycle through print mult x x == x
 
+
+
 idempotents :: Ord a => [a] -> (a -> a -> a) -> [a]
 idempotents elts mult = filter isSame elts
        where
         isSame x = mult x x == x
+
+
+-- multTable :: genrators -> multFunc -> [(a,a,a)]
+multTable elts mult =  map cartExtend cartProd
+       where
+         cartProd = [(x,y) | x <- elts, y <- elts]
+         cartExtend (x,y) = (x,y, mult x y )
+
+intMultTable elts mult =   map toTheInts mt
+        where
+           mt = multTable elts mult
+           thingIds = zip elts [0..(length elts)]
+           thingToIDMap = Map.fromList thingIds
+           toTheInts (a,b,c) = ((Map.!) thingToIDMap a, (Map.!) thingToIDMap b, (Map.!) thingToIDMap c)
+
+
+
+getIdemp' mult (primal, current) = if isSame current then current else getIdemp' mult (primal, next) 
+    where
+      next = mult primal current
+      isSame x = mult x x == x
+
+-- getIdemp :: Ord a =>  (a -> a -> a) -> a -> a
+getIdemp mult primal = getIdemp' mult (primal, primal)
+
+intIdempMultTable elts mult =  map (toTheInts . toIdemps) mt 
+        where
+           mt = multTable elts mult
+           toIdemps (a,b,c) = (getIdemp mult a, getIdemp mult b, getIdemp mult c)
+           thingIds = zip elts [0..(length elts)]
+           thingToIDMap = Map.fromList thingIds
+           toTheInts (a,b,c) = ((Map.!) thingToIDMap a, (Map.!) thingToIDMap b, (Map.!) thingToIDMap c)
+
+
+
+
+--idempMultTable elts mult = [ getIdemp(a), getIdemp(b), getIdemp(c)
+idempMultTable elts mult = [(head elts, head elts, head elts)]
+      where
+        thingIds = zip elts [0..(length elts)]
+        thingToIDMap = Map.fromList thingIds
+        swapThingIds = zip [0..(length elts)] elts
+        idToThingMap = Map.fromList swapThingIds
+        eltIdemps =  zip [0..(length elts)] $ map (getIdemp mult) elts
+        idempMap = Map.fromList eltIdemps   -- Lookup idemp by eltd
+                    
+           
+        --How do lookup   (Map.!) thingToIDMap b
+
+
 
 
 -- Examples:
@@ -597,7 +653,7 @@ genGraphs desc mult elts = do
                            appendFile q3name $ edgesToDot $ edges $ getRightTransitionGraph elts mult
                            appendFile q3name gvizpost
                            -- Process.system $ "dot -Tpng " ++ qname ++ "  > kitchensink/" ++ desc ++ "MT.png"
-                           let s5 = "kitchensink/" ++ desc ++ "Right_MT"
+                           let s5 = "kitchensink/" ++ desc ++ "RIGHT_MT"
                            jabber5 <- Process.readProcess "python" ["src/min_dom_z3.py",q3name, s5] ""
                            
 
@@ -684,6 +740,23 @@ genBCloseGraphs  n = do
                    print jabber
                    -- print "gen bclose graphs"                   
 
+getIdempImage mult (a,b) = (getIdemp mult a, getIdemp mult b,  getIdemp mult (mult a b))
+
+crossProduct elts = [ (a,b) | a <- elts  , b <- elts ]
+
+uniqueIdempImages  elts  mult = List.nub $ map (getIdempImage mult) $ crossProduct elts
+
+-- getIdemp mult primal
+-- Construct the multiplication table.
+-- Map each entry in a multiplication table to it's idempotent under iteraton
+-- How do we visualize these to understand the structure?
+-- * Print the table
+-- * Condense table to (idemp(a), idemp(b), idemp(a*b))
+-- crossIdempotentExperiment  mult x = map mapTrippleToIdempotents x
+--                          where
+--                           mapTrippleIdempotents (a,b,c) = (idempotent mult a, idempotent mult b, idempotent mult c)
+
+
 
 bazn n k = getNodeLabels $ zipIndex $ matsZn n k
 genBMMGraphsn  n  k = do
@@ -708,10 +781,42 @@ genBMMGraphsn  n  k = do
 -- vSomething :: (a -> b -> a) -> (Vertex -> Vertex -> Vertex)
 -- vSomething z = unsafeCoerce z
 
+
+
 endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)
 
+
+          print  "START idempotent image experiment (unique counts)"
+          print "For Tn"
+          print $ length $uniqueIdempImages  (trans [0..(1-1)])  transMult  
+          print $ length $uniqueIdempImages  (trans [0..(2-1)])  transMult  
+          print $ length $uniqueIdempImages  (trans [0..(3-1)])  transMult 
+          print $ length $uniqueIdempImages  (trans [0..(4-1)])  transMult 
+          
+          --print $ length $uniqueIdempImages  (trans [0..(5-1)])  transMult 
+          --print $ "Looks like a new OEIS sequence?"
+          print  "For Sn"  
+          --print $ length $uniqueIdempImages  (perm 1)  transMult  
+          --print $ length $uniqueIdempImages  (perm 2)  transMult  
+          --print $ length $uniqueIdempImages  (perm 3)  transMult 
+          --print $ length $uniqueIdempImages  (perm 4)  transMult 
+          print $ map (\x -> length $uniqueIdempImages (perm x) transMult ) [0..4]
+          --print $ "Property is boring for permutations, everybody has idenity as idempotent."
+          print  "For Zn addition"
+          print $ map (\x -> length $uniqueIdempImages [0..(x-1)] (addX x) )  [0..30]
+          print  "For Zn multiplication"
+          print  "Looks like $4^{prime divisors}$"
+        
+          print $ map (\x -> length $uniqueIdempImages [0..(x-1)] (mulX x) )  [0..210]
+
+          --- Iteresting, some formula of prime factors?
+
+          exitSuccess
+
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
+          print "END OF EXPERIMENT"
+
           forM_ [1..11] $ \n -> genZnMultGraphs  n
 
           Process.system "mkdir -p BMMData"
@@ -841,9 +946,19 @@ endoMain = do
           putStrLn ""
           
           --giterdone a = unsafeCoerce a :: [Vertex]
+          print $ multTable (trans [0..(3-1)]) transMult
+          print $ intMultTable (trans [0..(3-1)]) transMult
+          print $ List.nub $ intIdempMultTable (trans [0..(3-1)]) transMult
           genGraphs "bork"  transMult  (trans [0..(3-1)])
-         -- genGraphs "desc" transMult  (perm 2)
-          --(perm x) transMult
+          -- generate all the graphs we want
+          -- Also generate csv files of index,period, count
+          -- Also  graph Transfroms (remove double edges, invert edges)
+          -- generate multiplication table as CSV  Int, Int, Int
+          -- generate  csv  A, idempotent(A^i) 
+          -- Generate low level matching equations
+          -- Generate  csv idempotent, members, longest branch, leaves
+          -- Generate csv of mult table lensed to idempotent reps What does this graph look like?
+         
 
 
           putStrLn "Edges in Sn, OEIS A060014"
