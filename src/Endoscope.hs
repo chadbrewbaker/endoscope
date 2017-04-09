@@ -15,6 +15,7 @@ import qualified Data.List as List
 import qualified Data.Map as Map
 
 import System.Exit
+import System.Timeout.Returning
 
 import MatMul
 import Control.Monad
@@ -31,7 +32,21 @@ powset = Control.Monad.filterM (const [True, False])
 
 transMult a b =  Vector.toList $Vector.backpermute (Vector.fromList a) (Vector.fromList b)
 
+
 trans x = replicateM (length x) x
+
+-- Inspect the Register Operation Semigroup...
+-- addReg a b bits = a + b
+-- multReg a b bits = a * b
+-- subReg a b bits = a - b
+-- xorReg a b bits = xor
+-- lshiftReg
+-- rshiftReg
+-- andReg
+-- orReg
+-- nandReg
+-- popcntReg
+
 
 
 -- Applies a polynomial transformation to the identiy function
@@ -782,41 +797,61 @@ genBMMGraphsn  n  k = do
 -- vSomething z = unsafeCoerce z
 
 
+buildTransElts x = trans [0..(x-1)]
+
+computeSeqs (multFunc, buildElement, upper, name) = do
+          --print thename
+          print $ "Elements of " ++ name
+          print $ map (\x -> length (buildElement x)) [0..(upper+3)]
+          print $ "Idempotent classes under multiplication for " ++ name
+          print $ map (\x -> length $ uniqueIdempImages (buildElement x) multFunc ) [0..upper]
+          print $ "Sum of element orders for " ++ name
+          print $ map (\x -> length $ (endoscope (buildElement x) multFunc)) [1..(upper+3)]
+          --Play with this to get time bounded runs
+          --runTimeoutNF 100000 (  map (\x -> length $ (endoscope (buildElement x) multFunc)) [1..(upper+3)] ) >>= print
+        
 
 endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)
+          computeSeqs (transMult, buildTransElts, (3::Int), "Tn")
+          print "--------------------"
+          print "Idempotent mult images for Tn"
+          --print $ uniqueIdempImages  (trans [0..(2-1)])  transMult 
+          --print $ length $ uniqueIdempImages  (trans [0..(1-1)])  transMult  
+          -- print $ length $ uniqueIdempImages  (trans [0..(2-1)])  transMult 
 
-
-          print  "START idempotent image experiment (unique counts)"
-          print "For Tn"
-          print $ length $uniqueIdempImages  (trans [0..(1-1)])  transMult  
-          print $ length $uniqueIdempImages  (trans [0..(2-1)])  transMult  
-          print $ length $uniqueIdempImages  (trans [0..(3-1)])  transMult 
-          print $ length $uniqueIdempImages  (trans [0..(4-1)])  transMult 
+          -- print $ length $ uniqueIdempImages  (trans [0..(3-1)])  transMult 
+         -- print $ length $uniqueIdempImages  (trans [0..(4-1)])  transMult 
+          print "NEW OEIS draft A285051"
+          print "(memoized)[1,11,268,13705]"
           
           --print $ length $uniqueIdempImages  (trans [0..(5-1)])  transMult 
+        --  print $ map (\x -> length $ uniqueIdempImages (trans x) transMult ) [0..3]
           --print $ "Looks like a new OEIS sequence?"
-          print  "For Sn"  
+          print  "Idempotent mult images for Sn"  
           --print $ length $uniqueIdempImages  (perm 1)  transMult  
           --print $ length $uniqueIdempImages  (perm 2)  transMult  
           --print $ length $uniqueIdempImages  (perm 3)  transMult 
           --print $ length $uniqueIdempImages  (perm 4)  transMult 
-          print $ map (\x -> length $uniqueIdempImages (perm x) transMult ) [0..4]
+          print $ map (\x -> length $ uniqueIdempImages (perm x) transMult ) [0..4]
           --print $ "Property is boring for permutations, everybody has idenity as idempotent."
-          print  "For Zn addition"
-          print $ map (\x -> length $uniqueIdempImages [0..(x-1)] (addX x) )  [0..30]
-          print  "For Zn multiplication"
+          print  "Idempotent mult images for Zn addition"
+          print $ map (\x -> length $ uniqueIdempImages [0..(x-1)] (addX x) )  [0..30]
+          print  "Idempotent mult images for Zn multiplication"
           print  "Looks like $4^{prime divisors}$"
-        
-          print $ map (\x -> length $uniqueIdempImages [0..(x-1)] (mulX x) )  [0..210]
-
+          print "New OEIS draft A285052"
+          print $ map (\x -> length $ uniqueIdempImages [0..(x-1)] (mulX x) )  [0..210]
+          -- print $ uniqueIdempImages [0..(6-1)] (mulX 6)
+          print  "Idempotent mult images for Z2 matmul"
+          print $ map (\x -> length $ uniqueIdempImages  (matsZ2 x) mmult ) [0..2]
+          print $ "New OEIS draft  A285053, memoized [1,4,118,27080 ]"
+          --print $ uniqueIdempImages  (matsZ2 2) mmult 
           --- Iteresting, some formula of prime factors?
 
-          exitSuccess
+          --exitSuccesss
 
           --putStrLn $ latexTable "$Z_6^\\times$" [0..(6-1)] $ chunkRows 6 (mTable [0..(6-1)] (mulX 6))
-          print "END OF EXPERIMENT"
-
+          print "Generation of Zn Mult Graphs"
           forM_ [1..11] $ \n -> genZnMultGraphs  n
 
           Process.system "mkdir -p BMMData"
@@ -865,13 +900,14 @@ endoMain = do
 
 
           --System.Exit.exitSuccess
+          print "Group lengths of mulX 12 "
           print $  List.sortBy (flip compare)  $ groupLengths $ List.group $List.sort $ allCounts [0..(12-1)] (mulX 12)
           putStrLn ""
 
          --BMM SECTION---
           putStrLn "Edges in monogenic inclusion graph of MatMul on Z2, new sequence"
           print $ map (length . endoMMThing) [1..3]
-          putStrLn "Idempotents in BMM, OEIS A086907 and OEIS A132186"
+          putStrLn "Idempotents in BMM, OEIS A086907 and OEIS A132186 diagnalizable nxn matricies over GF2"
           print $ map (length . idempMM) [1..3]
           putStrLn "Leaves in BMM, ??"
           print $ map (length . leavesMM) [1..3]
@@ -894,6 +930,7 @@ endoMain = do
           genBMMGraphsn  1  13
           genBMMGraphsn  1  14
           genBMMGraphsn  1  15
+          print "What the heck is this sequnce again?"
           putStrLn "Min Dom BMMn 2 *; https://oeis.org/A226756"
           genBMMGraphsn  2  1 
           genBMMGraphsn  2  2 
@@ -920,8 +957,9 @@ endoMain = do
           print $ map (length . leavesMAddThing) [1..3]
           putStrLn ""
 
-          putStrLn "Edges in monogenic inclusion graph of multiply on Zn, new sequence"
+          putStrLn "Edges in monogenic inclusion graph of multiply on Zn, new sequence draft A285055"
           print $ map (length . endoThing) [1..50]
+          print $ map endoThing [1..3]
           writeFile  "monoZnEdges.seq" $ show $ map (length . endoThing) [1..20]
           putStrLn "Idempotents in Zn under multiply, OEIS A034444"
           print $ map (length . idempThing) [1..50]
@@ -929,8 +967,9 @@ endoMain = do
           print $ map (length . leavesThing ) [1..50]
           putStrLn ""
 
-          putStrLn "Edges in Tn, new sequence"
+          putStrLn "Edges in Tn, new sequence draft A285054"
           print $ map (length . endoTransThing) [1..6]
+          --print $ map (endoTransThing) [1..2]
           writeFile  "tnEdges.seq" $ show $ map (length . endoTransThing) [1..6]
           putStrLn "Idempotents in Tn, OEIS A000248"
           print $ map (length . idempTransThing) [1..6]

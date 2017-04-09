@@ -22,7 +22,8 @@ library
                        vector,
                        containers,
                        array,
-                       process
+                       process,
+                       timeout-with-results
 executable endoscope
   hs-source-dirs:      src
   main-is:             main.hs
@@ -34,13 +35,14 @@ executable endoscope
                        containers,
                        vector,
                        array,
-                       process
+                       process,
+                       timeout-with-results
 
 test-suite tests
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Unit.hs
-  build-depends:       base,
+  build-depends:       base >= 4.7 && < 5,
                        endoscope,
                        hspec,
                        HUnit

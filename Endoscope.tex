@@ -1,6 +1,6 @@
 
 
-\title{Analysis of Small Magmas}
+\title{Combinatorial Analysis of Semigroups, Semigroup Relations, and Semigroup Type Signatures}
 \author{
         Chad Brewbaker \\
         Flying Dog Solutions\\
@@ -18,8 +18,11 @@
 \usepackage{graphicx}
 \graphicspath{ {img/} {znMultData/} {bmmData/}}
 
-\newtheorem{thm}{Theorem}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{defn}[thm]{Definition}
+\newtheorem{open}[thm]{Definition}
 \newtheorem{exam}[thm]{Example}
 \newtheorem{subroutine}[thm]{Subroutine}
 %\theoremstyle{plain}
@@ -36,8 +39,26 @@
 \maketitle
 
 \begin{abstract}
-We examine properties of small magmas.  By chasing permutations under self-composition (iteration) we derive an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm \cite{babai2015}. We also gain insight into the complexity of boolean matrix multiplication, AKS class primality tests, integer factorization, integer multiplication, and integer addition.
-\end{abstract}
+Semigroups are fundamental constructs in programming.   Semigroups extend groups of permutations to all bivariate functions on a finite set.   
+
+%Open problems for semigroups include the runtime complexity of matrix-matrix multiply over a finite field [strassen, recent], primality testing [aks], and integer factorization [??]. The distributed memory parallel runtime complexity of Greatest Common Divisor is also an open problem [p complete book].  
+
+By understanding the structure of a semigroup from first principals we are able to design precise algorithms for the semigroup. %That could be optimizing a matrix-matrix multiply, or finding a minimal sequence of machine operations on a register type.
+
+First we inspect properties of the full transformation semigroup $T_{n}$, the semigroup of all bivariate functions over a finite set of $n$ elements.  We chase member functions under self composition (iteration) to build various directed graphs.  We then use an SMT solver [Z3] to compute minimum dominating sets. We also create directed graphs to study the interplay of semigroup multiplication between idempotent classes.
+
+Secondly we inspect properties of permutations, boolean matrix multiplication,  modular addition, modular multiplication, and Conway's Game of Life (torus grid).  Our results include an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm \cite{babai2015}.
+
+%ADD, SUB,  XOR, OR, AND, NAND, SHIFTL, SHIFTR, .... Look into the machine language semigroup for an architecture.  Z_{2}, Z_{4}, Z_{8}, Z_{16}, Z_{32}, ... Which functions are not covered by iteration?
+%Precicely define composition space  f:: a -> a -> a  vs bound application space g:: a -> a
+
+% ADD :: a -> a -> a
+
+Third, we extend familiar concepts like associatively and commutativity to all small relations on semigroups and enumerate their members. Results have been added to Sloane's Online Encyclopedia of Integer Sequences.
+
+Fourth, we demonstrate functional analogues to algebraic identities from Jr. High Algebra. It is our hope that through this lens programming can be taught alongside Algebra and reach the same level of universal education.  \end{abstract} 
+
+
 %Should we do magmas too? Curious what idempotents a magma has, seems they could be completely rando.
 
 
@@ -45,81 +66,21 @@ We examine properties of small magmas.  By chasing permutations under self-compo
 
 
 \section{Introduction}
+Semigroups are sets of functions of type $f(a)\rightarrow a$ on the finite set $a$ that are closed under composition. 
 
-In this paper we study sets of functions $f(a,a)\rightarrow a$ on the finite set $a$ . In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
+In addition to mathematical notation we will also use the formal programming language Haskell \cite{hudak2007}.
+
 \begin{code}
 f :: a -> a -> a
+associative f a b c  =  f( f a  b) c   ==  f a (f b c) 
 \end{code}
+
+
+
+
 % Alternatively, \inputminted{Haskell}{Program.hs}
 
-The number of functions from a size $y$ set to a size $x$ set is $x^{y}$. In Haskell notation we write the type signature of such a mapping as
 
-\begin{code}
-f :: y -> x 
-\end{code}
-
-This analogue between exponentials and functions gives a translation between algebraic and functional viewpoints.
-
-%It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms \cite{boyanov2003}.
-
-In this paper we will look at magmas, which have type signature:
-\begin{code}
-magma :: a -> a -> a
-\end{code}
-
-The order of an unconstrained magma is thus $n^{n^{n}}$.
-
-We will also look at semigroups. They have the additional property that:
-\begin{code}
-magma ( magma a, b) c   == magma a, (magma b,c) 
-\end{code}
-
-They have order $n^{n}$. The complete semigroup on $n$ elements is called the full transformation semigroup denoted as $T_{n}$
-
-Recall this algebraic identity we learned in primary school.
-
-$$(a^{m})^{n} = a^{mn}$$
-
-Translated from exponential notation into functional notation we have:
-\begin{code}
-curry :: n -> m -> a
-curry' :: (n,m) -> a
-\end{code}
-We name these functions ``curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, a function that passes a tuple of values, and chaining of functions.
-
-For endofuctions with two arguments $f(a,a)\rightarrow a$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in a function with one argument.
-\begin{code}
-f :: (a,a) -> a
-g :: a -> a -> a
-h :: a -> (a -> a)
-\end{code}
-
-% I can never remember how to format umlauts etc in latex, http://tex.stackexchange.com/questions/57743/how-to-write-ä-and-other-umlauts-and-accented-letters-in-bibliography (Chad)
-
-J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either transition (multiplication) tables, transition graphs, or transition trees to give us a viewpoint that best fits a discussion on two variable endofunctions. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[height=4cm]{buchiTrinity}
-    \caption{Diagram made by B\"{u}chi}
-   
-\end{figure}
-
-
-Multiplication table function
-\begin{code}
-multTableFunc :: a -> a ->a
-\end{code} 
-
-Binding the first variable on all possible values gives a list of functions:
-\begin{code}
-boundList ::  [(a->a)]
-\end{code}
-
-The enumeration of all triples is the multiplication table:
-\begin{code}
- multTable :: [(a,a,a)]
-\end{code}
 
 Here are definitions that are used.
 
@@ -134,50 +95,50 @@ Here are definitions that are used.
 \begin{defn}[Semigroup] A collection of endofunctions closed under composition.  \end{defn}
 \begin{defn}[Full Transformation Semigroup on $n$ elements ] The collection of all endofunctions on an $n$ element set. Denoted $T_{n}.$\end{defn}
 
-\begin{exam} Multiplication table of $T_{2}$ here.\end{exam}
+%\begin{exam} Multiplication table of $T_{2}$ here.\end{exam}
 
-\begin{defn}[Iteration] Self composition of an endofunction. For $i$ self compositions on endofunction $f$ we denote this $f^{i}$\end{defn}
+\begin{defn}[Iteration] Self composition of an endofunction. For $i$ self compositions on endofunction $f(x)$ we denote this as $f^{i}(x)$\end{defn}
 
 \begin{defn}[Index] Given an endofunction, the number iterations until it enters a cycle.\end{defn}
-\begin{defn}[Period] Given an endofunction, the length of it's cycle under iteration.\end{defn}
+\begin{defn}[Period] Given an endofunction, the length of the cycle under iteration.\end{defn}
 
 \begin{defn}[Permutation] An endofunction with index of zero.\end{defn}
 
 \begin{defn}[Symmetric group on $n$ elements] The set of all permutations on $n$ elements. Denoted $S_{n}$.\end{defn}
-\begin{exam} Multiplication table of $S_{3}$ here.\end{exam}
-\begin{defn}[Idempotent] An endofunction with index of zero and period of 1.\end{defn}
+%\begin{exam} Multiplication table of $S_{3}$ here.\end{exam}
+\begin{defn}[Idempotent] An endofunction with index of zero and period of 1.  Alternatively, $f(x) = x$ for all $x$. \end{defn}
 
-\begin{defn}[Reluctant function] An endofunction with index of at least 1.\end{defn}
-\begin{defn}[Monogenic semigroup] A semigroup generated by one element. For permutations these are called cyclic groups.\end{defn}
+\begin{defn}[Forgetful function] An endofunction with index of at least 1. \end{defn}
+\begin{defn}[Monogenic semigroup] A semigroup generated by one element. \end{defn}
 
-\begin{defn}[Binary Matrix Multiplication] Matrix multiplication on the integers modulo 2. For this paper all matrices will be considered square.\end{defn}
+\begin{defn}[Binary Matrix Multiplication] Square matrix-matrix multiplication on the integers modulo 2. \end{defn}
 
-\begin{exam} Multiplication table of $BMM_{2}$ here.\end{exam}
+%\begin{exam} Multiplication table of $BMM_{2}$ here.\end{exam}
 
-\begin{defn}[co-BMM] Matrix multiplication on the integers modulo 2 with addition an multiplication operations swapped.\end{defn}
+\begin{defn}[co-BMM] Boolean matrix-matrix multiplication on the integers modulo 2 with the addition an multiplication operations swapped.\end{defn}
 
 \begin{defn}[$Z^{+}_{n}$] Integers modulo $n$ under addition. \end{defn} 
 
-\begin{exam} Multiplication table of $Z^{+}_{6}$ here.\end{exam}
+%\begin{exam} Multiplication table of $Z^{+}_{6}$ here.\end{exam}
 
 \begin{defn}[$Z^{\times}_{n}$] Integers modulo $n$ under multiplication. \end{defn} 
 
-\begin{exam} Multiplication table of $Z^{\times}_{6}$ here.\end{exam}
+%\begin{exam} Multiplication table of $Z^{\times}_{6}$ here.\end{exam}
 
-\begin{tabular}{ |c |c |c |c |c |c |c | }\hline
-$Z_6^\times$&0&1&2&3&4&5\\ \hline
-0&0&0&0&0&0&0\\ \hline
-1&0&1&2&3&4&5\\ \hline
-2&0&2&4&0&2&4\\ \hline
-3&0&3&0&3&0&3\\ \hline
-4&0&4&2&0&4&2\\ \hline
-5&0&5&4&3&2&1\\ \hline
-\end{tabular}
+%\begin{tabular}{ |c |c |c |c |c |c |c | }\hline
+%$Z_6^\times$&0&1&2&3&4&5\\ \hline
+%0&0&0&0&0&0&0\\ \hline
+%1&0&1&2&3&4&5\\ \hline
+%2&0&2&4&0&2&4\\ \hline
+%3&0&3&0&3&0&3\\ \hline
+%4&0&4&2&0&4&2\\ \hline
+%5&0&5&4&3&2&1\\ \hline
+%\end{tabular}
 
-\begin{defn}[Factoring] Given an endofunction $f$; return two endofunctions $g,h$, neither an identity function, such that $ f = g(h)$.\end{defn}
-\begin{defn}[Multiplication] Given endofunctions $g,h$; return an endofuction $f$, such that $ f = g(h)$.\end{defn}
-\begin{defn}[Left factoring] Given endofunctions $f,h$; return an endofuction $g$, such that $ f = g(h)$.\end{defn}
-\begin{defn}[Right factoring] Given endofunctions $f,g$; return an endofuction $h$, such that $ f = g(h)$.\end{defn}
+\begin{defn}[Factoring] Given an endofunction $f$; return two endofunctions $g,h$, neither an identity function, such that $ f = g  h $.\end{defn}
+\begin{defn}[Multiplication] Given endofunctions $g,h$; return an endofuction $f$, such that $ f = g h $.\end{defn}
+\begin{defn}[Right division] Given endofunctions $f,h$; return an endofuction $g$, such that $ f = g h$.\end{defn}
+\begin{defn}[Left division] Given endofunctions $f,g$; return an endofuction $h$, such that $ f = g h$.\end{defn}
 
 
 
@@ -187,10 +148,10 @@ States are Live and Dead. Live cell with less than two Live neighbors dies. Live
 \begin{defn}[Detection] Given two endofunctions $f$ and $g$, if $f^{i} = g$, then $g$ is said to detect $f$. \end{defn}
 
 
-\begin{exam} Examples with permutations and $Z_{1000}^{\times}$\end{exam}
+%\begin{exam} Examples with permutations and $Z_{1000}^{\times}$\end{exam}
 
 
-Our first tool is \emph{Endoscope}. It is a function on an ordered set $a$. The arguments are a list of elements in the set $a$, and the endofunction under study. It returns pairs of elements in the set under self-compositions. $(f^{0}, f^{i})$
+We start with a function \emph{endoscope}. It is a function on an ordered set $a$. The arguments are a list of elements in the set $a$, and an endofunction under study. It returns pairs of elements in the set under self-compositions. $(f^{0}, f^{i})$
 \begin{code}
 endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a)
 \end{code}
@@ -204,55 +165,65 @@ idempotents elts mult = filter isSame elts
         isSame x = mult x x == x 
 \end{code}
 
+\begin{defin}[Leaves] Leaves are endofunctions $f$ such that for any other endofunction $g$, $f != g^{i}$ \end{defin}
+
+\begin{defin}[Idempotent class] The idempotent class around idempotent $f f = f$ is all endofunctions $g$ such that $g^{i} = f$.    \end{defin}
+The monogenic detection graph has one connected component for each idempotent class.
+
+\begin{defin}[Cyclic member] A member with index of zero.\end{defin}
+
+\begin{defin}[Group-likes]
+Group likes are all the cyclic members of a semigroup. \end{defin}
+Group-likes are similar to permutations since they have index 0.
 
 
-Crypto hash to  256 bits
-Count
+%Crypto hash to  256 bits
+%Count
 
 
-Here are the subroutines discussed.
+%Here are the subroutines discussed.
+%
+%\begin{subroutine}[Boolean Matrix Multiplication] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Factorial] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Binomial Coefficent] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Index of endofuction] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Period of endofuction] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Primality] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Integer factorization] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Integer addition] 
+%
+%\end{subroutine}
+%
+%\begin{subroutine}[Integer multiplication]
 
-\begin{subroutine}[Boolean Matrix Multiplication] 
+%Grid method: $O({log(n)^2 \over p})$ O(1) multiplications for each digit pair followed by a reduction of their products.
 
-\end{subroutine}
+%F{\"u}rer's method \cite{furer2007} approaches a conjectured lower bound of $O(n log n)$.
+%\end{subroutine}
 
-\begin{subroutine}[Factorial] 
-
-\end{subroutine}
-
-\begin{subroutine}[Binomial Coefficent] 
-
-\end{subroutine}
-
-\begin{subroutine}[Index of endofuction] 
-
-\end{subroutine}
-
-\begin{subroutine}[Period of endofuction] 
-
-\end{subroutine}
-
-\begin{subroutine}[Primality] 
-
-\end{subroutine}
-
-\begin{subroutine}[Integer factorization] 
-
-\end{subroutine}
-
-\begin{subroutine}[Integer addition] 
-
-\end{subroutine}
-
-\begin{subroutine}[Integer multiplication]
-
-Grid method: $O({log(n)^2 \over p})$ O(1) multiplications for each digit pair followed by a reduction of their products.
-
-F{\"u}rer's method \cite{furer2007} approaches a conjectured lower bound of $O(n log n)$.
-\end{subroutine}
-
-\section{Transformation function spaces, $T_{n}$}
-The as an analogue to Cayley's Theorem, all sets of endofunctions form as subsemigroup of the full transformation semigroup $T_{n}$. Demonstration of our techniques in detail on the entire set of $n^{n}$ functions allows us to generalize their applicability.
+\section{The Full Transformation Semigroup, $T_{n}$}
+The as an analogue to Cayley's Theorem for groups of permutations, all sets of endofunctions form a subsemigroup of the full transformation semigroup $T_{n}$.  By making designing our analysis techniques to work on any subseimgroup of $T_{n}$ we design analysis techniques that work on every semigroup.
 
 \subsection{Edges under iteration}
 We denote an edge if $f^i(x) = g(x)$.
@@ -263,12 +234,12 @@ We denote an edge if $f^i(x) = g(x)$.
 \inputminted{text}{tnIdempotents.seq}
 \subsection{Histogram of index,period.}
 
-\subsection{Reluctant functions} Functions which are not permutaions were called ``reluctant" \cite{mullin1970}. Under self composition they form tree like structures blowing away states in their co-domain until they reach a permutation like state with no further loss of co-domain elements. 
+\subsection{Forgetful functions} Recall, endofunctions which are not permutations were called ``reluctant" \cite{mullin1970}. Under self composition they form tree like structures which under self composition forget states in their co-domain until they reach a cycle with no further loss of co-domain elements.
 
 \subsection{Leaves}
 \inputminted{text}{tnLeaves.seq}
 \subsection{Group-likes}
-
+Group likes are all the cyclic members of a semigroup. They behave like permutations since they have index 0.
 
 % f^i =  f,g,h,f  -> [(f,g), (g,h), (h,f)]
 \subsection{Monogenic Transition Graph}
@@ -633,6 +604,97 @@ When this function returns a nonzero value, we know that $n$ is a composite numb
 
 % If $k$ is  sqrt(n) +1 then either that bottom $k!$ whacks out a chuck, or it leaves that largest number unfactored.
 %can we take successive $2^{i}!$ to find the order of magnitude of the smallest prime divisor?
+
+
+Enumerating trees of binary and unary functions:
+
+Sets of binary/unary function equaltities
+
+\section{Semigroup Type Signatures}
+
+
+\begin{theorem}[Exponentials]
+The number of functions from a size $y$ set to a size $x$ set is }$x^{y}$. 
+\end{theorem}
+
+This relation between exponentials and functions gives a translation between algebraic and functional viewpoints.
+
+%It is no coincidence that John Atanasoff, inventor of the first electronic digital computer, had an early curiosity with exponents and logarithms \cite{boyanov2003}.
+
+Magmas are two variable functions with type signature:
+\begin{code}
+magma :: a -> a -> a
+\end{code}
+
+\begin{corollary}
+The order of an unconstrained magma is $n^{n^{n}}$.
+\end{corollary}
+
+The complete semigroup on $n$ elements is called the full transformation semigroup denoted as $T_{n}$
+
+\begin{corollary}
+The full transformation semigroup has order $n^{n}$.
+\end{corollary}
+
+Recall this algebraic identity:
+
+$$(a^{m})^{n} = a^{mn}$$
+
+Translated from exponential notation into functional notation we have:
+\begin{code}
+curry :: n -> m -> a
+curry' :: (n,m) -> a
+\end{code}
+We name these functions ``curry" in reference to Haskell Curry \cite{curry1934}. Curry's rule states we can refactor between a function between passing multiple arguments, a function that passes a tuple of values, and chaining of functions.
+
+For functions with two arguments $f(a,a)\rightarrow a$, Author Cayley \cite{cayley1851} noted we can abstract them into multiplication tables. Applying Curry's rule we can bind the first argument in the multiplication resulting in a function with one argument. All three of these type signatures are of the same order:
+\begin{code}
+f :: (a,a) -> a
+g :: a -> a -> a
+h :: a -> (a -> a)
+\end{code}
+
+% I can never remember how to format umlauts etc in latex, http://tex.stackexchange.com/questions/57743/how-to-write-ä-and-other-umlauts-and-accented-letters-in-bibliography (Chad)
+
+J. Richard B\"{u}chi \cite{buchi1962} further described how we can use either multiplication tables, transition graphs, or transition trees to give us a viewpoint that best fits a discussion on magmas. A quality English translation was made by Sylvia B\"{u}chi, Peter Deussen and Dirk Siefkes \cite{maclane1990}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=4cm]{buchiTrinity}
+    \caption{Diagram made by B\"{u}chi}
+   
+\end{figure}
+
+
+Multiplication table function
+\begin{code}
+multTableFunc :: a -> a ->a
+\end{code} 
+
+Binding the first variable on all possible values gives a list of functions:
+\begin{code}
+boundList ::  [(a->a)]
+\end{code}
+
+The enumeration of all triples is the multiplication table:
+\begin{code}
+ multTable :: [(a,a,a)]
+\end{code}
+
+
+
+\section{Conclusion and open problems}
+\begin{open}[Boolean Matrix Matrix Mulitiply] What is the runtime complexity of Boolean matrix-matrix multiply?\end{open}
+
+What is the runtime complexity of integer factorization?
+
+What is the runtime complexity of primality testing?
+
+What is the distributed memory parallel complexity of greatest common divisor?
+
+How many semigroup type signatures are there in the LLVM compiler suite? (Or an entire Linux distribution)  How many functions do they correspond to and which are the fastest?
+
+Study the semigroup of common assembly language functions like OR, AND, XOR, ADD , SUB, NOT, MULT over $Z_{2^{k}}$.  What does it tell us about compiler optimizations or machine instructions that would be useful?
 
 
 \appendix{New OEIS Sequences}

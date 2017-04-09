@@ -40,14 +40,14 @@ p g.call(0,1,2,3,4) == "[[2, 0, 0]]"
 
 single = ->(a){a}
 double = ->(a){a+a}
-tripple = ->(a){a+a+a}
-q = id.lens(single, double,tripple)
+triple = ->(a){a+a+a}
+q = id.lens(single, double,triple)
 p q.call(5,5,5) == "[[5, 10, 15]]"
 p q.call(1,2,3) == "[[1, 4, 9]]"
 
-h = q.lens(single,double,tripple)
+h = q.lens(single,double,triple)
 p h.call(5,5,5) == "[[5, 20, 45]]"
-k = id.lens(single, 444,tripple)
+k = id.lens(single, 444,triple)
 p k.call(4,4,4,4,4) == "[[4, 444, 12]]"
 
 
