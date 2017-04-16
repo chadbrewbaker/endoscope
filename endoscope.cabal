@@ -23,7 +23,8 @@ library
                        containers,
                        array,
                        process,
-                       timeout-with-results
+                       timeout-with-results,
+                       criterion
 executable endoscope
   hs-source-dirs:      src
   main-is:             main.hs
@@ -36,7 +37,8 @@ executable endoscope
                        vector,
                        array,
                        process,
-                       timeout-with-results
+                       timeout-with-results,
+                       criterion
 
 test-suite tests
   type:                exitcode-stdio-1.0
@@ -46,3 +48,16 @@ test-suite tests
                        endoscope,
                        hspec,
                        HUnit
+benchmark endoscope-bench
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:      src
+  main-is:             Bench.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       endoscope,
+                       criterion,
+                       vector,
+                       containers,
+                       array,
+                       process,
+                       timeout-with-results

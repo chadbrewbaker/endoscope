@@ -78,7 +78,8 @@ rhash thing = Map.fromList $ zip [0..(length thing)] thing
 
 
 
-
+fastNub :: Ord a => [a] -> [a]
+fastNub lst =  Set.toList  $ Set.fromList lst
 
 --snippet
 
@@ -219,6 +220,16 @@ mono' mult (primal, current) accum = if Set.member (primal,next) accum then accu
 mono :: Ord a =>  (a -> a -> a) -> a -> Set (a,a)
 mono mult primal = mono' mult (primal,primal) Set.empty
 
+
+
+
+-- monoWithDepth' mult (primal, current) accum = if Set.member (primal,next) accum then accum else monoWithDepth' mult (primal, next) (Set.insert (primal,next) accum)
+--     where
+--       next = mult primal current
+
+-- monoWithDepth mult primal = monoWithDepth' mult (primal,primal) Set.empty 0
+
+
 -- [(generator,[index elements], [cycle elements]) ]
 indexAndCycle :: Ord a => a -> (a ->a ->a) -> (a, [a], [a] )
 indexAndCycle elt mult = (elt, singles, cycles)
@@ -280,6 +291,8 @@ chunkRows n xs = take n xs : chunkRows n (drop n xs)
 
 
 
+--endoscope :: Ord a => [a] -> (a -> a -> a) -> Set (a,a,depth)
+endoscopeWithDepth elts mult = foldr (Set.union . mono mult) Set.empty elts
 
 
 -- endoscope :: generators -> endoFunc -> Set (a,a)
@@ -322,6 +335,8 @@ getLeaves elts mult =  filter isLeaf $ zip (Array.indices theInvertGraph) (Array
          isLeaf (i,[]) = True
          isLeaf (i, [x]) | i == x  = True
          isLeaf (_, _) = False
+
+
 
 
 getGraph elts mult = theGraph
@@ -759,7 +774,12 @@ getIdempImage mult (a,b) = (getIdemp mult a, getIdemp mult b,  getIdemp mult (mu
 
 crossProduct elts = [ (a,b) | a <- elts  , b <- elts ]
 
-uniqueIdempImages  elts  mult = List.nub $ map (getIdempImage mult) $ crossProduct elts
+
+uniqueIdempImages  elts  mult = Set.elems $  Set.fromList $  map (getIdempImage mult) $ crossProduct elts
+
+uniqueIdempImageCount  elts  mult = Set.size $  Set.fromList $  map (getIdempImage mult) $ crossProduct elts
+
+-- (Set.insert (primal,next) accum)
 
 -- getIdemp mult primal
 -- Construct the multiplication table.
@@ -797,24 +817,93 @@ genBMMGraphsn  n  k = do
 -- vSomething z = unsafeCoerce z
 
 
+--treeLikes :: Ord a => [a] -> (a -> a -> a) -> Set (a,a) 
+treelikes  elts multfunc  =  filter isTreelike elts
+          where
+            endo = endoscope elts multfunc
+            isTreelike a = not $ Set.member (a,a) endo
+
+grouplikes  elts multfunc  =  filter isGrouplike elts
+          where
+            endo = endoscope elts multfunc
+            isGrouplike a = Set.member (a,a) endo
+
+
+--TODO
+leaflikes  elts multfunc  =  Set.toList $ Set.difference (Set.fromList elts) (Set.fromList notLeaves)
+  where
+      endo = endoscope elts multfunc
+      notLeaves =  map isolate $ Set.toList $ endo
+      isolate (a,b) = b
+
+
+
+
+
 buildTransElts x = trans [0..(x-1)]
 
-computeSeqs (multFunc, buildElement, upper, name) = do
+buildPermElts x = perm x
+
+buildAddZnElts x = [0..(x-1)] 
+
+buildMMElts x = (matsZ2 x) 
+
+
+gtChecksum elts mult = (length $grouplikes elts mult) + (length $ treelikes elts mult) 
+
+leafProds elts mult =  Set.elems $ Set.fromList prodTuple
+              where
+              leaves = leaflikes elts mult
+              --Should probably serialize the getIdemp to a Map ?
+              prodTuple = [((getIdemp mult x),(getIdemp mult y), (getIdemp mult (mult x y))   ) | x <- leaves, y <- leaves]
+
+computeSeqs (multFunc, multBind, buildElement, upper, name) = do
           --print thename
           print $ "Elements of " ++ name
-          print $ map (\x -> length (buildElement x)) [0..(upper+3)]
+          print $ map (\x -> length (buildElement x)) [1..(upper)]
           print $ "Idempotent classes under multiplication for " ++ name
-          print $ map (\x -> length $ uniqueIdempImages (buildElement x) multFunc ) [0..upper]
+          --print $ map (\x -> length $ uniqueIdempImages (buildElement x) multFunc ) [1..(upper+2)]
+          print $ map (\x -> uniqueIdempImageCount (buildElement x) (multBind multFunc x) ) [1..(upper)]
           print $ "Sum of element orders for " ++ name
-          print $ map (\x -> length $ (endoscope (buildElement x) multFunc)) [1..(upper+3)]
+          print $ map (\x -> length $ (endoscope (buildElement x) (multBind multFunc x) ) ) [1..(upper)]
+          print $ "(What is this even??) Leaves of " ++ name
+          print $ map (\x -> length $  getLeaves (buildElement x) (multBind multFunc x) ) [1..(upper)]
+          print $ "Leaves 2.0 of " ++ name
+          print $ map (\x -> length $  leaflikes (buildElement x) (multBind multFunc x) ) [1..(upper)]
+
+          print $ "Idempotents of " ++ name
+          print $ map (\x -> length $  idempotents (buildElement x) (multBind multFunc x) ) [1..(upper)]
+          print $ "Treelikes of " ++ name
+          print $ map (\x -> length $  treelikes (buildElement x) (multBind multFunc x) ) [1..(upper)]
+          print $ "Grouplikes of " ++ name
+          print $ map (\x -> length $  grouplikes (buildElement x) (multBind multFunc x) ) [1..(upper)]
+          print $ "Checksum grouplike + treelike of " ++ name
+          print $ map (\x -> gtChecksum (buildElement x) (multBind multFunc x) ) [1..(upper)]
+          print $ "Leaf product idempotent images " ++ name
+          print $ map (\x -> length $ leafProds (buildElement x) (multBind multFunc x) ) [1..(upper)]
+
+         -- treelikes x treelikes  (t1, t2, t1*2)  then map to idempotent classes. How many?
+          --leaves x leaves  (l1, l2, l1*l2)  then map to idempotent classes. How many?
+
+          print "--------------------"
+
           --Play with this to get time bounded runs
           --runTimeoutNF 100000 (  map (\x -> length $ (endoscope (buildElement x) multFunc)) [1..(upper+3)] ) >>= print
         
 
+xbind multf x = multf x
+idbind multf x = multf
+
+
 endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)
-          computeSeqs (transMult, buildTransElts, (3::Int), "Tn")
-          print "--------------------"
+          computeSeqs (transMult, idbind, buildTransElts, (4::Int), "Tn")
+          computeSeqs (transMult, idbind, buildPermElts, (4::Int), "Sn")
+          computeSeqs (addX, xbind, buildAddZnElts, (10::Int), "Zn+")
+          computeSeqs (mulX, xbind, buildAddZnElts, (10::Int), "Znx")
+          computeSeqs (mmult, idbind, buildMMElts, (3::Int), "BoolMatmul")
+          computeSeqs (madd, idbind, buildMMElts, (2::Int), "BoolCoMatmul")
+         
           print "Idempotent mult images for Tn"
           --print $ uniqueIdempImages  (trans [0..(2-1)])  transMult 
           --print $ length $ uniqueIdempImages  (trans [0..(1-1)])  transMult  
@@ -824,6 +913,9 @@ endoMain = do
          -- print $ length $uniqueIdempImages  (trans [0..(4-1)])  transMult 
           print "NEW OEIS draft A285051"
           print "(memoized)[1,11,268,13705]"
+
+          print "Leaves of Tn"
+          print "A163947 [0,0,6,84,1400,25590]"
           
           --print $ length $uniqueIdempImages  (trans [0..(5-1)])  transMult 
         --  print $ map (\x -> length $ uniqueIdempImages (trans x) transMult ) [0..3]
