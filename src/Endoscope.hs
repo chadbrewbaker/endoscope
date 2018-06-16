@@ -78,6 +78,17 @@ rhash thing = Map.fromList $ zip [0..(length thing)] thing
 
 
 
+multMapList elts mult =  map cartExtend cartProd
+       where
+         cartProd = [(x,y) | x <- elts, y <- elts]
+         cartExtend (x,y) = ((x,y), mult x y )
+
+constructMultMap elts mult = Map.fromList $ multMapList elts mult
+
+multByMap a b theMap = (Map.!) theMap (a,b)
+
+
+
 fastNub :: Ord a => [a] -> [a]
 fastNub lst =  Set.toList  $ Set.fromList lst
 
@@ -460,6 +471,8 @@ multTable elts mult =  map cartExtend cartProd
          cartProd = [(x,y) | x <- elts, y <- elts]
          cartExtend (x,y) = (x,y, mult x y )
 
+
+
 intMultTable elts mult =   map toTheInts mt
         where
            mt = multTable elts mult
@@ -792,6 +805,43 @@ uniqueIdempImageCount  elts  mult = Set.size $  Set.fromList $  map (getIdempIma
 --                           mapTrippleIdempotents (a,b,c) = (idempotent mult a, idempotent mult b, idempotent mult c)
 
 
+-- For Zn what is the max steps that euclid's algorithm takes?
+-- Can we get off cycle results?
+
+modMult a b = rem a b
+
+
+
+euclidStep (a,b) = if (a > b) then (rem a b,b) else (a, rem b a)
+
+
+euclid :: Integral a => a ->a ->a -- Log_2 of smallest element steps
+euclid 0 b = abs b
+euclid a 0 = abs a
+euclid a b = euclid b $ rem a b
+
+--euclidSteps :: Integral a => a-> a ->a ->(a,a)
+euclidSteps' (s, 0, b) = (s, abs b)
+euclidSteps' (s, a, 0) = (s, abs a)
+euclidSteps' (s, a, b) = euclidSteps' (s+1, b , rem a b)
+euclidSteps a b = euclidSteps' (0,a,b)
+      --  where
+        --   extract
+cartProdEuclid n =  List.maximum $ map fst $[euclidSteps x y | x <- elts, y <- elts]
+         where
+           elts = [1..n]
+
+--OEIS A072694 ??? n occurs Fibbonacci(n) times? Put this as a comment?
+--  [cartProdEuclid e | e <- [1..30]]
+-- [1,2,3,3,4,4,4,5,5,5,5,5,6,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,7,7]
+
+--If we ran euclid a b and euclid b a in parallel what is the max runtime then?
+-- Will cyle matching yield gcd?  max (a^i intsersect b^i) in Zb (b>a)? 
+
+eGCD :: Integer -> Integer -> (Integer, Integer, Integer)
+eGCD 0 b = (b,0,1)
+eGCD a b = let (g,s,t) = eGCD ( b`mod` a) a in (g,t-(b `div` a)*s,s) 
+
 
 bazn n k = getNodeLabels $ zipIndex $ matsZn n k
 genBMMGraphsn  n  k = do
@@ -829,15 +879,25 @@ grouplikes  elts multfunc  =  filter isGrouplike elts
             isGrouplike a = Set.member (a,a) endo
 
 
---TODO
+
 leaflikes  elts multfunc  =  Set.toList $ Set.difference (Set.fromList elts) (Set.fromList notLeaves)
   where
       endo = endoscope elts multfunc
       notLeaves =  map isolate $ Set.toList $ endo
       isolate (a,b) = b
 
+getPrime = undefined
+isLexMin = undefined
 
+primeGroupLikes elts multfunc = filter isLexMin primals
+  where
+          gLikes = grouplikes elts multfunc
+          primals = getPrime gLikes multfunc
+          
 
+--Conjecture  leaves + lexminPrimals are useful how?
+-- What are leaves for various thingys?
+-- t1^i+k * t2^j+k =  t1^i * (t1^k * t2^k) * t2^j 
 
 
 buildTransElts x = trans [0..(x-1)]
@@ -857,10 +917,24 @@ leafProds elts mult =  Set.elems $ Set.fromList prodTuple
               --Should probably serialize the getIdemp to a Map ?
               prodTuple = [((getIdemp mult x),(getIdemp mult y), (getIdemp mult (mult x y))   ) | x <- leaves, y <- leaves]
 
+
+simpleMultTable elts mult = Set.elems $ Set.fromList prodTuple
+              where
+              --Should probably serialize the getIdemp to a Map ?
+              prodTuple = [(x,y,(mult x y), (getIdemp mult x),(getIdemp mult y), (getIdemp mult (mult x y))   ) | x <- elts, y <- elts]
+
 computeSeqs (multFunc, multBind, buildElement, upper, name) = do
-          --print thename
+          
           print $ "Elements of " ++ name
           print $ map (\x -> length (buildElement x)) [1..(upper)]
+          print $ "Simple Mult Table"
+         
+          --Make a map of elt -> (elt, idemp)
+          --  Partition into  indempotent sets [[elts]]
+          --  Calculate the idempotent mult table
+          -- Do idempotent reps follow any similar pattern?
+          print $ simpleMultTable (buildElement 2) (multBind multFunc 2)
+
           print $ "Idempotent classes under multiplication for " ++ name
           --print $ map (\x -> length $ uniqueIdempImages (buildElement x) multFunc ) [1..(upper+2)]
           print $ map (\x -> uniqueIdempImageCount (buildElement x) (multBind multFunc x) ) [1..(upper)]
@@ -875,7 +949,7 @@ computeSeqs (multFunc, multBind, buildElement, upper, name) = do
           print $ map (\x -> length $  idempotents (buildElement x) (multBind multFunc x) ) [1..(upper)]
           print $ "Treelikes of " ++ name
           print $ map (\x -> length $  treelikes (buildElement x) (multBind multFunc x) ) [1..(upper)]
-          print $ "Grouplikes of " ++ name
+          print $ "Cyclics/Grouplikes of " ++ name
           print $ map (\x -> length $  grouplikes (buildElement x) (multBind multFunc x) ) [1..(upper)]
           print $ "Checksum grouplike + treelike of " ++ name
           print $ map (\x -> gtChecksum (buildElement x) (multBind multFunc x) ) [1..(upper)]
@@ -894,6 +968,11 @@ computeSeqs (multFunc, multBind, buildElement, upper, name) = do
 xbind multf x = multf x
 idbind multf x = multf
 
+
+--Top Questions:
+-- Do idempotent classes imply multiplication properties?
+-- Leaves plus primal cyclic are non-idempotent min detection sets?
+-- (leaves + lexmin primal cyclics) ...
 
 endoMain = do
           --print $ allHistos [0..(12-1)] (mulX 12)

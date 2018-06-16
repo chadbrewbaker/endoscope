@@ -38,14 +38,19 @@
 
 \maketitle
 
+
+%http://web.mit.edu/dmehta/www/docs/Mehta_Daryush_PhD_Thesis_Proposal_FINAL.pdf
+
 \begin{abstract}
-Semigroups are fundamental constructs in programming.   Semigroups extend groups of permutations to all bivariate functions on a finite set.   
+Semigroups are fundamental constructs in programming.  Semigroups extend groups of permutations to composition of all functions over a finite set.  By understanding the structure of small finite semigroups from first principals we are able to design precise algorithms. Along the way we have documented many of our observations in Sloane's Online Encyclopedia of Integer Sequences. Our original motivation was quantifying the complexity of black box testing for non-trivial permutation groups, something we achieved as OEIS A186202.
+
+Open problems for semigroups over finite fields include the runtime complexity of matrix-matrix multiplication, primality testing, and integer factorization. The distributed memory runtime complexity of greatest common divisor is also open.
 
 %Open problems for semigroups include the runtime complexity of matrix-matrix multiply over a finite field [strassen, recent], primality testing [aks], and integer factorization [??]. The distributed memory parallel runtime complexity of Greatest Common Divisor is also an open problem [p complete book].  
 
-By understanding the structure of a semigroup from first principals we are able to design precise algorithms for the semigroup. %That could be optimizing a matrix-matrix multiply, or finding a minimal sequence of machine operations on a register type.
+ %That could be optimizing a matrix-matrix multiply, or finding a minimal sequence of machine operations on a register type.
 
-First we inspect properties of the full transformation semigroup $T_{n}$, the semigroup of all bivariate functions over a finite set of $n$ elements.  We chase member functions under self composition (iteration) to build various directed graphs.  We then use an SMT solver [Z3] to compute minimum dominating sets. We also create directed graphs to study the interplay of semigroup multiplication between idempotent classes.
+First we inspect properties of the full transformation semigroup $T_{n}$, the semigroup of composing functions over a finite set of $n$ elements.  We chase member functions under self composition (iteration) to build various directed graphs.  We then use an SMT solver [Z3] to compute minimum dominating sets. We also create directed graphs to study the interplay of semigroup multiplication between idempotent classes.
 
 Secondly we inspect properties of permutations, boolean matrix multiplication,  modular addition, modular multiplication, and Conway's Game of Life (torus grid).  Our results include an optimal subroutine for the brute force kernel of Babai's graph isomorphism algorithm \cite{babai2015}.
 
@@ -77,7 +82,12 @@ f :: a -> a -> a
 associative f a b c  =  f( f a  b) c   ==  f a (f b c) 
 \end{code}
 
-
+%Transformations SET of endofunctions closed under composition
+%Groups  set of permutations closed under composition
+%Zn+ integers mod n under right addition
+%Znx integers mod n under right multiplication
+%BMMgf2 matrices over Z2 under right multiplication
+%Toroidal Game of Life. Boards under step operator
 
 
 % Alternatively, \inputminted{Haskell}{Program.hs}
@@ -148,6 +158,12 @@ Here are definitions that are used.
 States are Live and Dead. Live cell with less than two Live neighbors dies. Live cell with 2 or 3 Live neighbors lives.  Live cell with more than 3 Live neighbors dies. Dead cell with exactly 3 live neighbors becomes Live.\end{defn} 
 
 \begin{defn}[Detection] Given two endofunctions $f$ and $g$, if $f^{i} = g$, then $g$ is said to detect $f$. \end{defn}
+
+\begin{defn}[Greatest Common Divisor] Given two endofunctions $f$ and $g$,  let $a \circ b = f$ and $x \circ y = g$. Over some ordering of the functions find the largest such that that $a=x$, respectively $b=y$, or return ``1'' for the identity function.  \end{defn}
+
+Using the terminology of \cite{greenlaw1995}, a parallel algorithm is feasible if it has worst case runtime and processor complexity of $n^{O(1)}$. An problem is highly parallel if it can be solved in worst case time complexity $(log n)^{O(1)}$. A problem is inherently sequential if it is feasible, but not highly parallel. It is an open question of Greatest Common Divisor for $Zn_{\times}$ is inherently sequential.
+
+By brute force we can match every multiplication triple that shares a left or right multiplicand. We can then use $log(n)$ comparisons to find the largest result. It takes $log(p)*log(n)$ time to broadcast the problem, and $log(p)*log(n)$ time to aggregate the result. Full multiplication table calculation takes $n\times n$ work, or ${n \times n \over p}$ in parallel.  $O(GCD) $ < $O(Primality)$ since a prime largest number implies the GDC is is 1. 
 
 
 %\begin{exam} Examples with permutations and $Z_{1000}^{\times}$\end{exam}
@@ -225,14 +241,19 @@ Group-likes are similar to permutations since they have index 0.
 %\end{subroutine}
 
 \section{The Full Transformation Semigroup, $T_{n}$}
-The as an analogue to Cayley's Theorem for groups of permutations, all sets of endofunctions form a subsemigroup of the full transformation semigroup $T_{n}$.  By making designing our analysis techniques to work on any subseimgroup of $T_{n}$ we design analysis techniques that work on every semigroup.
+The as an analogue to Cayley's Theorem for groups of permutations, sets of endofunctions form a subsemigroup of the full transformation semigroup $T_{n}$.  By designing our analysis techniques to work on any subseimgroup of $T_{n}$ we design analysis techniques that work on every finite semigroup.
 
-\subsection{Edges under iteration}
-We denote an edge if $f^i(x) = g(x)$.
+\subsection{The iteration graph}
+We denote an edge $f \rightarrow g$ if $f^i(x) = g(x)$.
+
+The number of edges is the sum of orders of all transformations on $n$ elements. We have added this sequence to OEIS as A285054.
 
 \inputminted{text}{tnEdges.seq}
 
 \subsection{Idempotents (connected components)}
+The iteration relation creates connected components of elements for $T_{n}$. At the center of each connected component is an idempotent element $i$, where $i^2 = i$. We hope that some computations on semigroups are abstracted by multiplications between idempotent classes.
+
+
 \inputminted{text}{tnIdempotents.seq}
 \subsection{Histogram of index,period.}
 
@@ -256,8 +277,6 @@ This is the dual of the Monogenic Reachabiliy graph. Edges are reversed in direc
 
 \subsection{Min Dom Set}
 Using the Microsoft Z3 SMT solver we compute minimum dominating sets of our monogenic graphs.
-
-
 
 
 
