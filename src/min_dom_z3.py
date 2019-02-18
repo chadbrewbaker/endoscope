@@ -33,20 +33,20 @@ def min_dom_set(graph):
     nodes_colors = dict((node_name, Int('k%r' % node_name)) for node_name in graph.nodes())
     for node in graph.nodes():
            if graph.has_edge(node,node):
-	      graph.remove_edge(node,node)
-	   s.add(And(nodes_colors[node] >= 0, nodes_colors[node] <= 1))
+              graph.remove_edge(node,node)
+           s.add(And(nodes_colors[node] >= 0, nodes_colors[node] <= 1))
            if len(graph.in_neighbors(node)) >0:
               dom_neighbor = Sum ([ (nodes_colors[j]) for j in graph.in_neighbors(node) ])
-	      s.add(Sum(nodes_colors[node], dom_neighbor ) >=1)
-	   else:
-	      s.add(nodes_colors[node]==1)
+              s.add(Sum(nodes_colors[node], dom_neighbor ) >=1)
+           else:
+              s.add(nodes_colors[node]==1)
     s.minimize( Sum([ nodes_colors[y] for y in graph.nodes()]) )
 
     if s.check() == unsat:
         raise Exception('Could not find a solution.')
     else:
         m = s.model()
-        return dict((name, m[color].as_long()) for name, color in nodes_colors.iteritems())
+        return dict((name, m[color].as_long()) for name, color in nodes_colors.items())
 
 
 def build_graph(path):
@@ -69,8 +69,8 @@ def main(argc, argv):
     for node in G.nodes_iter():
         n = G.get_node(node)
         n.attr['color'] = color_available[s[node]]
-	if s[node] != 0:
-		dom_size = dom_size +1
+        if s[node] != 0:
+           dom_size = dom_size +1
 
     #G.layout('dot')
     
